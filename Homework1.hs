@@ -2,21 +2,33 @@
 
 -- Problem 1
 
--- TODO!
+import Data.Char
+
+-- credits: http://stackoverflow.com/a/2838888/409976
+--          http://stackoverflow.com/q/4061777/409976
 --1234 -> [1,2,3,4]
---toDigits :: Integer -> [Integer]
---toDigits x 
---  | x <= 0    = []
---  | otherwise = []
+toDigits :: Integer -> [Integer]
+toDigits x 
+  | x <= 0    = []
+  | otherwise = (map (toInteger . digitToInt) . show) x
 
--- multiply every other (beginning at first element) by 2
+toDigitsRev :: Integer -> [Integer]
+toDigitsRev = reverse . toDigits
+
+-- double every other number (from right to left)
+-- f [1,2,3] == [1,4,3]
+-- f [8,7,6,5] == [16,7,12,5]
+--   reversed = [5,6,7,8], then double each odd element, and then reverse again
+--              [5,12,7,16], then reverse -> [16,7,12,5]
 doubleEveryOther :: [Integer] -> [Integer]
-doubleEveryOther xs = map (\(x, y) -> if(even y) then (x*2) else x) $ zip xs [0..]
+doubleEveryOther xs = (reverse . (map (\(x, y) -> if(odd y) then (x*2) else x))) $ zip (reverse xs) [0..]
 
+-- calculate the sum of all digits
+-- example: sumDigits [16,7,12,5] = 1 + 6 + 7 + 1 + 2 + 5 = 22
 sumDigits :: [Integer] -> Integer
-sumDigits = sum
+sumDigits = (sum . concat. map (toDigits))
 
-validate = Integer -> Bool
-validate = ((`mod` 10) . sum . doubleEveryOther . toDigits)
+validate :: Integer -> Bool
+validate = ((== 0) . (`mod` 10) . sumDigits . doubleEveryOther . toDigits)
 
 -- Problem 2
