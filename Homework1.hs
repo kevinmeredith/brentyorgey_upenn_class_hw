@@ -1,6 +1,6 @@
 -- From Brent Yorgey's UPenn class (http://www.seas.upenn.edu/~cis194/spring13/hw/01-intro.pdf)
 
--- Problem 1
+-- Problems 1-4
 
 import Data.Char
 
@@ -31,4 +31,12 @@ sumDigits = (sum . concat. map (toDigits))
 validate :: Integer -> Bool
 validate = ((== 0) . (`mod` 10) . sumDigits . doubleEveryOther . toDigits)
 
--- Problem 2
+-- Problem 5 (towers of Hanoi)
+
+type Peg = String
+type Move = (Peg, Peg)
+
+-- TODO: draw on paper to understand 
+
+--hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
+--hanoi n a b c    
