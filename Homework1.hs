@@ -36,7 +36,11 @@ validate = ((== 0) . (`mod` 10) . sumDigits . doubleEveryOther . toDigits)
 type Peg = String
 type Move = (Peg, Peg)
 
--- TODO: draw on paper to understand 
-
---hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
---hanoi n a b c    
+hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
+hanoi n a b c = hanoi' n a b c n []
+                  where hanoi' m x y z total acc 
+                         | m  == (-1)                 = reverse acc
+                         | ((total - m) `mod` 3) == 0 = hanoi' (m-1) x y z total ((x,z) : acc)
+                         | ((total - m) `mod` 3) == 1 = hanoi' (m-1) x y z total ((x,y) : acc)
+                         | ((total - m) `mod` 3) == 2 = hanoi' (m-1) x y z total ((z,y) : acc)
+                  
