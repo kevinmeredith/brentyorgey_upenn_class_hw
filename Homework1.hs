@@ -37,10 +37,6 @@ type Peg = String
 type Move = (Peg, Peg)
 
 hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
-hanoi n a b c = hanoi' n a b c n []
-                  where hanoi' m x y z total acc 
-                         | m  == (-1)                 = reverse acc
-                         | ((total - m) `mod` 3) == 0 = hanoi' (m-1) x y z total ((x,z) : acc)
-                         | ((total - m) `mod` 3) == 1 = hanoi' (m-1) x y z total ((x,y) : acc)
-                         | ((total - m) `mod` 3) == 2 = hanoi' (m-1) x y z total ((z,y) : acc)
+hanoi n a b c = moveToB n a b c ++ [(a,c)] ++ moveToC n a b c
+                 where moveToB m x y z = 
                   

@@ -1,0 +1,30 @@
+Shortest Moves to put all blocks from a to c
+
+For N = 3
+
+a, c |
+a, b | moving N-1 blocks from a to b
+c, b |
+a, c --- midpoint
+b, a |
+b, c | moving N-1 blocks from b to c
+a, c |
+
+
+For N = 4
+
+a, b |
+a, c |
+b, c |
+a, b |  moving N-1 blocks from a to b
+c, a |
+c, b |
+a, b |
+a, c --- mid point
+b, c |
+b, a |
+c, a |
+b, c | moving N-1 blocks from b to c
+a, b |
+a, c |
+b, c |
