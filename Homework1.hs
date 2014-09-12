@@ -32,11 +32,22 @@ validate :: Integer -> Bool
 validate = ((== 0) . (`mod` 10) . sumDigits . doubleEveryOther . toDigits)
 
 -- Problem 5 (towers of Hanoi)
-
+-- Given the number of discs and names for the three pegs, `hanoi`
+--   should return a list of moves to be performed to move the stack of
+--   discs from the first peg to the second.
 type Peg = String
 type Move = (Peg, Peg)
 
-hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
-hanoi n a b c = moveToB n a b c ++ [(a,c)] ++ moveToC n a b c
-                 where moveToB m x y z = 
-                  
+hanoi :: Integer -> Peg -> Peg -> Peg -> Maybe [Move]
+hanoi n a b c
+ | n <= 2    = Nothing
+ | odd n     = Just $ (a,b) : (a,c) : pickBest a b c (mkStack (n-2), [1], [2])
+ | otherwise = Just $ (a,c) : (a,b) : pickBest a b c(mkStack (n-2), [2], [1])
+
+pickBestBGoal :: -> Peg -> Peg -> Peg -> ([Int], [Int], [Int]) -> Move
+pickBest a b c (x:xs, y:ys:, z:zs) = if (y > z && 
+pickBest a b c (x:xs, y:ys:, z:zs) = 
+pickBest a b c (x:xs, y:ys:, z:zs) = 
+
+mkStack :: Int -> [Int]
+mkStack n = [3..n]
