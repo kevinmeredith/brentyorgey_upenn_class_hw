@@ -40,14 +40,15 @@ type Move = (Peg, Peg)
 
 hanoi :: Integer -> Peg -> Peg -> Peg -> Maybe [Move]
 hanoi n a b c
- | n <= 2    = Nothing
+ | n < 2     = Nothing -- TODO fix!
+ | n == 2    = Just $ (a,c) : (a,b) : (c,b) : []
  | odd n     = Just $ (a,b) : (a,c) : pickBest a b c (mkStack (n-2), [1], [2])
- | otherwise = Just $ (a,c) : (a,b) : pickBest a b c(mkStack (n-2), [2], [1])
+ | otherwise = Just $ (a,c) : (a,b) : pickBest a b c (mkStack (n-2), [2], [1])
 
 pickBestBGoal :: -> Peg -> Peg -> Peg -> ([Int], [Int], [Int]) -> Move
-pickBest a b c (x:xs, y:ys:, z:zs) = if (y > z && 
-pickBest a b c (x:xs, y:ys:, z:zs) = 
-pickBest a b c (x:xs, y:ys:, z:zs) = 
+pickBestBGoal a b c (x:xs, y:ys:, z:zs) = if (y > z && 
+pickBestBGoal a b c (x:xs, y:ys:, z:zs) = 
+pickBestBGoal a b c (x:xs, y:ys:, z:zs) = 
 
 mkStack :: Int -> [Int]
 mkStack n = [3..n]
