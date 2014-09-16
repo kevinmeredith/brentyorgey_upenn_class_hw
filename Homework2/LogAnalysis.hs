@@ -1,3 +1,4 @@
+-- (http://www.seas.upenn.edu/~cis194/spring13
 -- Problem 1
 
 {-# OPTIONS_GHC -Wall #-}
@@ -48,8 +49,11 @@ matches' r x
    | matchRegex r x == Nothing = False
    | otherwise                 = True
 
+
+-- Note that pattern matching is not exhaustive (thanks compiler)
+-- Patterns not matched: (LogMessage _ _ _) (Node _ (Unknown _) _)
 insert :: LogMessage -> MessageTree -> MessageTree
 insert (Unknown _) t = t
 insert lm Leaf = (Node Leaf lm Leaf)
-insert lm@(_ _ ts _) (l (_ _ treeTs _) r)  = if(ts > treeTs) then insert lm l
-                                             else insert lm r
+insert lm@(LogMessage _ ts _) (Node l (LogMessage _ treeTs _) r) = if(ts > treeTs) then insert lm l
+                                                                   else insert lm r
