@@ -57,3 +57,7 @@ insert (Unknown _) t = t
 insert lm Leaf = (Node Leaf lm Leaf)
 insert lm@(LogMessage _ logMsgTimeStamp _) (Node l msg@(LogMessage _ treeTimeStamp _) r) = if(logMsgTimeStamp > treeTimeStamp) then (Node (insert lm l) msg r)
                                                                    else (Node l msg (insert lm r)) 
+
+--we can build a complete MessageTree from a list of messages.
+build :: [LogMessage] -> MessageTree
+build = foldr (insert) Leaf                                                                   
