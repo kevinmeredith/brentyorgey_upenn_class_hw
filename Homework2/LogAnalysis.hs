@@ -55,5 +55,5 @@ matches' r x
 insert :: LogMessage -> MessageTree -> MessageTree
 insert (Unknown _) t = t
 insert lm Leaf = (Node Leaf lm Leaf)
-insert lm@(LogMessage _ ts _) (Node l (LogMessage _ treeTs _) r) = if(ts > treeTs) then insert lm l
-                                                                   else insert lm r
+insert lm@(LogMessage _ logMsgTimeStamp _) (Node l msg@(LogMessage _ treeTimeStamp _) r) = if(logMsgTimeStamp > treeTimeStamp) then (Node (insert lm l) msg r)
+                                                                   else (Node l msg (insert lm r)) 
