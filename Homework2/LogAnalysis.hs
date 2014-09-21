@@ -54,10 +54,44 @@ matches' r x
 -- Patterns not matched: (LogMessage _ _ _) (Node _ (Unknown _) _)
 insert :: LogMessage -> MessageTree -> MessageTree
 insert (Unknown _) t = t
-insert lm Leaf = (Node Leaf lm Leaf)
-insert lm@(LogMessage _ logMsgTimeStamp _) (Node l msg@(LogMessage _ treeTimeStamp _) r) = if(logMsgTimeStamp > treeTimeStamp) then (Node (insert lm l) msg r)
-                                                                   else (Node l msg (insert lm r)) 
+insert logMsg Leaf = (Node Leaf logMsg Leaf)
+insert logMsg@(LogMessage _ logMsgTimeStamp _) (Node l treeMsg@(LogMessage _ treeTimeStamp _) r) = if(logMsgTimeStamp > treeTimeStamp) then (Node (insert logMsg l) treeMsg r)
+                                                                                           else (Node l treeMsg (insert logMsg r)) 
 
 --we can build a complete MessageTree from a list of messages.
 build :: [LogMessage] -> MessageTree
 build = foldr (insert) Leaf                                                                   
+
+-- which takes a sorted MessageTree and produces a list of all the
+-- LogMessages it contains, sorted by timestamp from smallest to biggest.
+--inOrder :: MessageTree -> [LogMessage]
+--inOrder = dumbSort . extract
+
+dumbSort :: [LogMessage] -> [LogMessage]
+dumbSort [] = []
+dumbSort xs = if (isSorted xs) then (Just xs) else (dumbSort $ addMinToFront xs)          
+
+isSorted :: [a] -> Bool
+isSorted []        = True
+isSoted xxs@(x:xs) = if (minimum xxs == x) then (isSorted xs) else False
+
+addMinToFront :: [a] -> [a]
+addMinToFront []   = []
+addMinToFront xs = safeMinimum xs >>= (\x -> x : (filterOne xs))
+
+-- >>= :: (Monad m) => m a -> (a -> m b) -> m b
+
+safeMinimum :: [a] -> Maybe a
+safeMinimum [] = Nothing
+safeMinimum xs = Just $ minimum xs
+
+filterOne :: (Eq a) =>  a ->  [a] -> [a]
+filterOne _ []     = []
+filterOne y xs = reverse $ filterOne' xs []
+                where filterOne' (z:zs) acc = if (z == y) then (zs ++ acc) else filterOne' zs (z : acc)
+
+extract :: MessageTree -> [LogMessage]
+extract Leaf = []
+extract (Node left msg right) = msg : (extract left) ++ (extract right)
+
+--Node MessageTree LogMessage MessageTree
