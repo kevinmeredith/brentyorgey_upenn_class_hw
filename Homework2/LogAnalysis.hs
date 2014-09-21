@@ -6,6 +6,8 @@ module LogAnalysis where
 
 import Log	
 import Text.Regex
+import Data.Function (on)
+import Data.List (sortBy)
 
 main :: IO [LogMessage]
 main = do 
@@ -64,20 +66,37 @@ build = foldr (insert) Leaf
 
 -- which takes a sorted MessageTree and produces a list of all the
 -- LogMessages it contains, sorted by timestamp from smallest to biggest.
---inOrder :: MessageTree -> [LogMessage]
---inOrder = dumbSort . extract
+inOrder :: MessageTree -> [LogMessage]
+inOrder = sortBy (compare `on` timeStamp) . extract
 
+timeStamp :: LogMessage -> Int
+timeStamp (LogMessage _ x _) = x
+
+extract :: MessageTree -> [LogMessage]
+extract Leaf = []
+extract (Node left msg right) = msg : (extract left) ++ (extract right)
+
+--We have decided that “relevant” means “errors with a severity of at least 50”.
+whatWentWrong :: [LogMessage] -> [String]
+whatWentWrong = (filter (not . null)) . (map getErrorWithSevAtLeast50) . inOrder . build
+
+getErrorWithSevAtLeast50 :: LogMessage -> String
+getErrorWithSevAtLeast50 (LogMessage (Error sev) _ msg) = if (sev >= 50) then msg else []
+getErrorWithSevAtLeast50 _ = []
+
+{- initially (partially) re-invented the wheel, but then found http://stackoverflow.com/questions/9814648/haskell-list-of-data-type-sorting
 dumbSort :: [LogMessage] -> [LogMessage]
 dumbSort [] = []
-dumbSort xs = if (isSorted xs) then (Just xs) else (dumbSort $ addMinToFront xs)          
+dumbSort xs = if (isSorted xs) then xs else dumbSort $ addMinToFront xs
 
-isSorted :: [a] -> Bool
-isSorted []        = True
-isSoted xxs@(x:xs) = if (minimum xxs == x) then (isSorted xs) else False
+isSorted :: (Eq a) => [a] -> Bool
+isSorted []         = True
+isSorted xxs@(x:xs) = if (minimum xxs == x) then (isSorted xs) else False
 
 addMinToFront :: [a] -> [a]
 addMinToFront []   = []
-addMinToFront xs = safeMinimum xs >>= (\x -> x : (filterOne xs))
+addMinToFront xs = min' : filterOne min'
+                   where min' = minimum xs
 
 -- >>= :: (Monad m) => m a -> (a -> m b) -> m b
 
@@ -86,12 +105,9 @@ safeMinimum [] = Nothing
 safeMinimum xs = Just $ minimum xs
 
 filterOne :: (Eq a) =>  a ->  [a] -> [a]
-filterOne _ []     = []
+filterOne _ [] = []
 filterOne y xs = reverse $ filterOne' xs []
                 where filterOne' (z:zs) acc = if (z == y) then (zs ++ acc) else filterOne' zs (z : acc)
 
-extract :: MessageTree -> [LogMessage]
-extract Leaf = []
-extract (Node left msg right) = msg : (extract left) ++ (extract right)
-
 --Node MessageTree LogMessage MessageTree
+-}
