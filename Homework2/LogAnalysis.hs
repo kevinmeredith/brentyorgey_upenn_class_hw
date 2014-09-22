@@ -85,9 +85,8 @@ getErrorWithSevAtLeast50 (LogMessage (Error sev) _ msg) = if (sev >= 50) then [m
 getErrorWithSevAtLeast50 _ = []
 
 testSampleLog :: IO [String]
-testSampleLog = check $ messageList >>= f
+testSampleLog = messageList >>= f
     where messageList = testParse parse 100 "sample.log"
-          check x     = if (length x \= 3) then error("failed!") else "success"
 
 
 f :: [LogMessage] -> IO [String]
