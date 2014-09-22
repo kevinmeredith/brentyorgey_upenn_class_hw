@@ -78,10 +78,10 @@ extract (Node left msg right) = msg : (extract left) ++ (extract right)
 
 --We have decided that “relevant” means “errors with a severity of at least 50”.
 whatWentWrong :: [LogMessage] -> [String]
-whatWentWrong = (filter (not . null)) . (map getErrorWithSevAtLeast50) . inOrder . build
+whatWentWrong msgs = ((inOrder . build) msgs) >>= getErrorWithSevAtLeast50 
 
-getErrorWithSevAtLeast50 :: LogMessage -> String
-getErrorWithSevAtLeast50 (LogMessage (Error sev) _ msg) = if (sev >= 50) then msg else []
+getErrorWithSevAtLeast50 :: LogMessage -> [String]
+getErrorWithSevAtLeast50 (LogMessage (Error sev) _ msg) = if (sev >= 50) then [msg] else []
 getErrorWithSevAtLeast50 _ = []
 
 {- initially (partially) re-invented the wheel, but then found http://stackoverflow.com/questions/9814648/haskell-list-of-data-type-sorting
