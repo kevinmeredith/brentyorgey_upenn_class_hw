@@ -28,6 +28,28 @@ f x
  | even x    = x : f (x `div` 2)
  | otherwise = f (3*x + 1) 
 
+-- Code Review Help to use `iterate` 
+foo' :: Integer -> Integer
+foo' = sum . filter even . takeWhile (/= 1) . hailstones
+
+hailstones' :: Integer -> [Integer]
+hailstones' x 
+ | even x     = x : hailstones' (x `div` 2)
+ | otherwise  = x : hailstones' (3 * x + 1)
+
+hailstones'' :: Integer -> [Integer]
+hailstones'' x = x : collatzStep x
+
+collatzStep :: Integer -> Integer
+collatzStep n 
+  | even n    = n `div` 2
+  | otherwise = 3 * n + 1
+
+hailstones = iterate collatzStep
+
+finalAnswer = sum . filter even . takeWhile (/= 1) . hailstones
+
+
 -- Given a list of Booleans, return true so long as there's an odd number (1,3,5,...)
 -- True elements
 xor :: [Bool] -> Bool
