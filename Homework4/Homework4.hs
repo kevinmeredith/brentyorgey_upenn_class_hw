@@ -2,7 +2,6 @@
 
 {-# OPTIONS_GHC -Wall #-}
 
-import Data.Set (empty, insert, toList)
 -- rewrite the following as "Wholemeal" programs
 fun1 :: [Integer] -> Integer
 fun1 [] = 1
@@ -29,6 +28,10 @@ f x
  | otherwise = f (3*x + 1) 
 
 -- Code Review Help to use `iterate` 
+-- http://codereview.stackexchange.com/questions/63734/hailstones-and-the-colla
+--foo' :: Integer -> Integer
+--foo' = sum . filter even . takeWhile (/= 1) . hailstones
+
 foo' :: Integer -> Integer
 foo' = sum . filter even . takeWhile (/= 1) . hailstones
 
@@ -37,16 +40,18 @@ hailstones' x
  | even x     = x : hailstones' (x `div` 2)
  | otherwise  = x : hailstones' (3 * x + 1)
 
-hailstones'' :: Integer -> [Integer]
-hailstones'' x = x : collatzStep x
+--hailstones'' :: Integer -> [Integer]
+--hailstones'' x = x : collatzStep x
 
 collatzStep :: Integer -> Integer
 collatzStep n 
   | even n    = n `div` 2
   | otherwise = 3 * n + 1
 
+hailstones :: Integer -> [Integer]
 hailstones = iterate collatzStep
 
+finalAnswer :: Integer -> Integer
 finalAnswer = sum . filter even . takeWhile (/= 1) . hailstones
 
 
@@ -60,13 +65,11 @@ map' :: (a -> b) -> [a] -> [b]
 map' f = foldr (\x acc -> f x : acc) []
 
 sieveSundaram :: Integer -> [Integer]
-sieveSundaram  n = (map (\x -> 2*x + 1). filter (excluded) . filter (odd)) [3..(2*n+2)]
-     where excluded     = (\x -> not $ x `elem` bad)
-     	   bad          = (numsToSet . numsToRemove) n
+sieveSundaram  n = (map (\x -> 2*x + 1). filter (excluded)) [1..n]
+     where excluded = (\x -> not $ x `elem` bad n)
+     	   bad y    = numsToRemove y
     
-numsToRemove :: Integer -> [(Integer, Integer)]
-numsToRemove n = [ (i, j) | i <- [2..n], j <- [2..n], i <= j, i * j + 2*i*j < n]
-
--- http://stackoverflow.com/a/18627837/409976
-numsToSet :: [(Integer, Integer)] -> [Integer]
-numsToSet = (toList . (foldr (\(x,y) acc -> insert x $ insert y acc) empty))
+-- I was incorrectly putting i and j in the list
+-- http://stackoverflow.com/questions/26050460/excluding-numbers-for-sieve-of-sundaram#comment40844043_26050504
+numsToRemove :: Integer -> [Integer]
+numsToRemove n = [ i + j + 2*i*j | i <- [1..n], j <- [1..n], i <= j, i + j + 2*i*j <= n]
