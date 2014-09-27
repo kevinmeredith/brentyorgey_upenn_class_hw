@@ -69,7 +69,11 @@ sieveSundaram  n = (map (\x -> 2*x + 1). filter (excluded)) [1..n]
      where excluded = (\x -> not $ x `elem` bad n)
      	   bad y    = numsToRemove y
     
--- I was incorrectly putting i and j in the list
+-- I was incorrectly putting i and j in the list. The following comment helped me out:
 -- http://stackoverflow.com/questions/26050460/excluding-numbers-for-sieve-of-sundaram#comment40844043_26050504
 numsToRemove :: Integer -> [Integer]
 numsToRemove n = [ i + j + 2*i*j | i <- [1..n], j <- [1..n], i <= j, i + j + 2*i*j <= n]
+
+-- fold left in terms of fold right
+myFoldl :: (a -> b -> a) -> a -> [b] -> a
+myFoldl f base xs = foldr (flip f) base (reverse xs)
