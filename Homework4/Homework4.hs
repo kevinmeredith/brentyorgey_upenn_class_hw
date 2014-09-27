@@ -77,3 +77,31 @@ numsToRemove n = [ i + j + 2*i*j | i <- [1..n], j <- [1..n], i <= j, i + j + 2*i
 -- fold left in terms of fold right
 myFoldl :: (a -> b -> a) -> a -> [b] -> a
 myFoldl f base xs = foldr (flip f) base (reverse xs)
+
+data Tree a = Leaf
+              | Node Integer (Tree a) a (Tree a) 
+              deriving (Show)-- where Integer is the height (bottom = 0)
+
+-- make balanced, binary tree (height diff is <= 1)
+foldTree :: [a] -> Tree a
+foldTree xs = (foldingFn . zip [0..]) xs
+   where foldingFn = foldr (\(i, elem) acc -> if (odd i) then insertFreeOrLeft  treeHeight elem acc  
+   	                                          else            insertFreeOrRight treeHeight elem acc) Leaf
+         treeHeight = getBinTreeHt xs 
+
+getBinTreeHt :: [a] -> Integer
+getBinTreeHt = floor . (logBase 2) . fromIntegral . length  	
+
+-- insert where there's a Leaf, otherwise choose Left
+insertFreeOrLeft :: Integer -> a -> Tree a -> Tree a
+insertFreeOrLeft index x Leaf                    = Node index  Leaf x Leaf
+insertFreeOrLeft _ x (Node level Leaf val right) = Node level (Node (level-1) Leaf x Leaf) val right
+insertFreeOrLeft _ x (Node level left val Leaf)  = Node level left val (Node (level-1) Leaf x Leaf)
+insertFreeOrLeft _ x (Node level left val right) = Node level (insertFreeOrLeft (level-1) x left) val right
+
+-- insert where there's a Leaf, otherwise choose Right
+insertFreeOrRight :: Integer -> a -> Tree a -> Tree a
+insertFreeOrRight index x Leaf                    = Node index  Leaf x Leaf
+insertFreeOrRight _ x (Node level left val Leaf)  = Node level left val (Node (level-1) Leaf x Leaf)
+insertFreeOrRight _ x (Node level Leaf val right) = Node level (Node (level-1) Leaf x Leaf) val right
+insertFreeOrRight _ x (Node level left val right) = Node level left val (insertFreeOrRight (level-1) x right)
