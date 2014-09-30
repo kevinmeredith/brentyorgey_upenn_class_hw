@@ -105,3 +105,19 @@ insertFreeOrRight index x Leaf                    = Node index  Leaf x Leaf
 insertFreeOrRight _ x (Node level left val Leaf)  = Node level left val (Node (level-1) Leaf x Leaf)
 insertFreeOrRight _ x (Node level Leaf val right) = Node level (Node (level-1) Leaf x Leaf) val right
 insertFreeOrRight _ x (Node level left val right) = Node level left val (insertFreeOrRight (level-1) x right)
+
+-- credit for next 2 functions: http://stackoverflow.com/a/19083798/409976
+indent :: [String] -> [String]
+indent = map ("  "++)
+
+layoutTree :: Show a => Tree a -> [String]
+layoutTree Leaf = []  -- wow, that was easy
+layoutTree (Node _ left here right) 
+         = indent (layoutTree right) ++ [show here] ++ indent (layoutTree left)
+          
+-- credit next 2 functions: http://codereview.stackexchange.com/questions/64047/create-binary-balanced-tree#comment117311_6404        
+prettyTree :: Show a => Tree a -> String
+prettyTree = unlines . layoutTree
+ 
+main :: IO()
+main = (putStrLn . prettyTree . foldTree) [0..15]
