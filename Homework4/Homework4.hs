@@ -85,26 +85,33 @@ data Tree a = Leaf
 -- make balanced, binary tree (height diff is <= 1)
 foldTree :: [a] -> Tree a
 foldTree xs = (foldingFn . zip [0..]) xs
-   where foldingFn = foldr (\(i, elem) acc -> if (odd i) then insertFreeOrLeft  treeHeight elem acc  
-   	                                          else            insertFreeOrRight treeHeight elem acc) Leaf
+   where foldingFn = foldr (\(i, elem) acc -> insertElem i elem acc) Leaf
          treeHeight = getBinTreeHt xs 
+         insertElem idx e tree 
+           | idx `mod` 4 == 0 = keepGoingLeft  treeHeight e tree
+           | idx `mod` 4 == 1 = keepGoingRight treeHeight e tree 
+           | idx `mod` 4 == 2 = leftThenRight  treeHeight e tree  
+           | otherwise        = rightThenLeft  treeHeight e tree
 
 getBinTreeHt :: [a] -> Integer
 getBinTreeHt = floor . (logBase 2) . fromIntegral . length  	
 
--- insert where there's a Leaf, otherwise choose Left
-insertFreeOrLeft :: Integer -> a -> Tree a -> Tree a
-insertFreeOrLeft index x Leaf                    = Node index  Leaf x Leaf
-insertFreeOrLeft _ x (Node level Leaf val right) = Node level (Node (level-1) Leaf x Leaf) val right
-insertFreeOrLeft _ x (Node level left val Leaf)  = Node level left val (Node (level-1) Leaf x Leaf)
-insertFreeOrLeft _ x (Node level left val right) = Node level (insertFreeOrLeft (level-1) x left) val right
 
--- insert where there's a Leaf, otherwise choose Right
-insertFreeOrRight :: Integer -> a -> Tree a -> Tree a
-insertFreeOrRight index x Leaf                    = Node index  Leaf x Leaf
-insertFreeOrRight _ x (Node level left val Leaf)  = Node level left val (Node (level-1) Leaf x Leaf)
-insertFreeOrRight _ x (Node level Leaf val right) = Node level (Node (level-1) Leaf x Leaf) val right
-insertFreeOrRight _ x (Node level left val right) = Node level left val (insertFreeOrRight (level-1) x right)
+keepGoingLeft :: Integer -> a -> Tree a -> Tree a
+keepGoingLeft index x Leaf                    = Node index Leaf x Leaf
+keepGoingLeft _ x (Node level left val right) = Node level (keepGoingLeft (level-1) x left) val right
+
+keepGoingRight :: Integer -> a -> Tree a -> Tree a
+keepGoingRight index x Leaf                    = Node index Leaf x Leaf
+keepGoingRight _ x (Node level left val right) = Node level left val (keepGoingRight (level-1) x right)
+
+leftThenRight :: Integer -> a -> Tree a -> Tree a
+leftThenRight index x Leaf                    = Node index Leaf x Leaf
+leftThenRight _ x (Node level left val right) = Node level (keepGoingRight (level-1) x left) val right
+
+rightThenLeft :: Integer -> a -> Tree a -> Tree a
+rightThenLeft index x Leaf                    = Node index Leaf x Leaf
+rightThenLeft _ x (Node level left val right) = Node level left val (keepGoingLeft (level-1) x right)
 
 -- credit for next 2 functions: http://stackoverflow.com/a/19083798/409976
 indent :: [String] -> [String]
