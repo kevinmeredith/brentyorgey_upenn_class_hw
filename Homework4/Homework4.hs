@@ -79,53 +79,31 @@ myFoldl :: (a -> b -> a) -> a -> [b] -> a
 myFoldl f base xs = foldr (flip f) base (reverse xs)
 
 data Tree a = Leaf
-              | Node Integer (Tree a) a (Tree a) 
-              deriving (Show)-- where Integer is the height (bottom = 0)
+              | Node (Tree a) a (Tree a) 
+              deriving (Show, Eq)-- where Integer is the height (bottom = 0)
 
--- make balanced, binary tree (height diff is <= 1)
+-- make balanced, binary tree (height diff is 1 at most)
 foldTree :: [a] -> Tree a
-foldTree xs = (foldingFn . zip [0..]) xs
-   where foldingFn = foldr (\(i, elem) acc -> insertElem i elem acc) Leaf
-         treeHeight = getBinTreeHt xs 
-         insertElem idx e tree 
-           | idx `mod` 4 == 0 = keepGoingLeft  treeHeight e tree
-           | idx `mod` 4 == 1 = keepGoingRight treeHeight e tree 
-           | idx `mod` 4 == 2 = leftThenRight  treeHeight e tree  
-           | otherwise        = rightThenLeft  treeHeight e tree
+foldTree []     = Leaf
+foldTree (x:xs) = Node (foldTree first) x (foldTree rest)
+     where (first, rest) = splitInHalf xs   
+
+splitInHalf :: [a] -> ([a], [a])
+splitInHalf xs = splitAt mid xs
+    where mid = length xs `div` 2
 
 getBinTreeHt :: [a] -> Integer
-getBinTreeHt = floor . (logBase 2) . fromIntegral . length  	
+getBinTreeHt = floor . (logBase 2) . fromIntegral . length 
 
-keepGoingLeft :: Integer -> a -> Tree a -> Tree a
-keepGoingLeft index x Leaf                    = Node index Leaf x Leaf
-keepGoingLeft _ x (Node level Leaf val right) = Node level (Node (level-1) Leaf x Leaf) val right
-keepGoingLeft _ x (Node level left val Leaf)  = Node level left val (Node (level-1) Leaf x Leaf)
-keepGoingLeft _ x (Node level left val right) = Node level (keepGoingLeft (level-1) x left) val right
-
-keepGoingRight :: Integer -> a -> Tree a -> Tree a
-keepGoingRight index x Leaf                    = Node index Leaf x Leaf
-keepGoingRight _ x (Node level left val Leaf)  = Node level left val (Node (level-1) Leaf x Leaf)
-keepGoingRight _ x (Node level Leaf val right) = Node level (Node (level-1) Leaf x Leaf) val right
-keepGoingRight _ x (Node level left val right) = Node level left val (keepGoingRight (level-1) x right)
-
-leftThenRight :: Integer -> a -> Tree a -> Tree a
-leftThenRight index x Leaf                    = Node index Leaf x Leaf
-leftThenRight _ x (Node level left val right) = Node level (keepGoingRight (level-1) x left) val right
-
-rightThenLeft :: Integer -> a -> Tree a -> Tree a
-rightThenLeft index x Leaf                    = Node index Leaf x Leaf
-rightThenLeft _ x (Node level left val right) = Node level left val (keepGoingLeft (level-1) x right)
-
--- credit for next 2 functions: http://stackoverflow.com/a/19083798/409976
+---- credit for next 2 functions: http://stackoverflow.com/a/19083798/409976
 indent :: [String] -> [String]
 indent = map ("  "++)
 
 layoutTree :: Show a => Tree a -> [String]
 layoutTree Leaf = []  -- wow, that was easy
-layoutTree (Node _ left here right) 
-         = indent (layoutTree right) ++ [show here] ++ indent (layoutTree left)
+layoutTree (Node left here right) = indent (layoutTree right) ++ [show here] ++ indent (layoutTree left)
           
--- credit next 2 functions: http://codereview.stackexchange.com/questions/64047/create-binary-balanced-tree#comment117311_6404        
+---- credit next 2 functions: http://codereview.stackexchange.com/questions/64047/create-binary-balanced-tree#comment117311_6404        
 prettyTree :: Show a => Tree a -> String
 prettyTree = unlines . layoutTree
  
