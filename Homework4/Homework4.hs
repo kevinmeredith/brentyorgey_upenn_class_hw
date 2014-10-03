@@ -79,14 +79,15 @@ myFoldl :: (a -> b -> a) -> a -> [b] -> a
 myFoldl f base xs = foldr (flip f) base (reverse xs)
 
 data Tree a = Leaf
-              | Node (Tree a) a (Tree a) 
+              | Node Integer (Tree a) a (Tree a) 
               deriving (Show, Eq)-- where Integer is the height (bottom = 0)
 
 -- make balanced, binary tree (height diff is 1 at most)
 foldTree :: [a] -> Tree a
 foldTree []     = Leaf
-foldTree (x:xs) = Node (foldTree first) x (foldTree rest)
-     where (first, rest) = splitInHalf xs   
+foldTree xxs@(x:xs) = Node level (foldTree first) x (foldTree rest)
+     where (first, rest) = splitInHalf xs 
+           level         = getBinTreeHt xxs
 
 splitInHalf :: [a] -> ([a], [a])
 splitInHalf xs = splitAt mid xs
@@ -95,13 +96,14 @@ splitInHalf xs = splitAt mid xs
 getBinTreeHt :: [a] -> Integer
 getBinTreeHt = floor . (logBase 2) . fromIntegral . length 
 
+
 ---- credit for next 2 functions: http://stackoverflow.com/a/19083798/409976
 indent :: [String] -> [String]
 indent = map ("  "++)
 
 layoutTree :: Show a => Tree a -> [String]
 layoutTree Leaf = []  -- wow, that was easy
-layoutTree (Node left here right) = indent (layoutTree right) ++ [show here] ++ indent (layoutTree left)
+layoutTree (Node _ left here right) = indent (layoutTree right) ++ [show here] ++ indent (layoutTree left)
           
 ---- credit next 2 functions: http://codereview.stackexchange.com/questions/64047/create-binary-balanced-tree#comment117311_6404        
 prettyTree :: Show a => Tree a -> String
