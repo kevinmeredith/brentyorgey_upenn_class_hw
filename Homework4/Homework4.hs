@@ -96,13 +96,16 @@ foldTree xs = (foldingFn . zip [0..]) xs
 getBinTreeHt :: [a] -> Integer
 getBinTreeHt = floor . (logBase 2) . fromIntegral . length  	
 
-
 keepGoingLeft :: Integer -> a -> Tree a -> Tree a
 keepGoingLeft index x Leaf                    = Node index Leaf x Leaf
+keepGoingLeft _ x (Node level Leaf val right) = Node level (Node (level-1) Leaf x Leaf) val right
+keepGoingLeft _ x (Node level left val Leaf)  = Node level left val (Node (level-1) Leaf x Leaf)
 keepGoingLeft _ x (Node level left val right) = Node level (keepGoingLeft (level-1) x left) val right
 
 keepGoingRight :: Integer -> a -> Tree a -> Tree a
 keepGoingRight index x Leaf                    = Node index Leaf x Leaf
+keepGoingRight _ x (Node level left val Leaf)  = Node level left val (Node (level-1) Leaf x Leaf)
+keepGoingRight _ x (Node level Leaf val right) = Node level (Node (level-1) Leaf x Leaf) val right
 keepGoingRight _ x (Node level left val right) = Node level left val (keepGoingRight (level-1) x right)
 
 leftThenRight :: Integer -> a -> Tree a -> Tree a
