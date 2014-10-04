@@ -93,9 +93,23 @@ splitInHalf :: [a] -> ([a], [a])
 splitInHalf xs = splitAt mid xs
     where mid = length xs `div` 2
 
+-- Get the total height of a tree given a list of [a] to create a Tree
 getBinTreeHt :: [a] -> Integer
 getBinTreeHt = floor . (logBase 2) . fromIntegral . length 
 
+-- Get the height of a tree.
+getTreeHeight :: Tree a -> Integer
+getTreeHeight Leaf                  = 0
+getTreeHeight (Node _ left _ right) = 1 + max (getTreeHeight left) (getTreeHeight right)
+
+-- Checks whether tree is balanced, i.e. difference in height between the root's left and
+-- right trees is <= 1
+isBalanced :: Tree a -> Bool
+isBalanced Leaf                  = True
+isBalanced (Node _ left _ right) = diff <= 1
+      where diff    = abs (leftHt - rightHt) 
+            leftHt  = getTreeHeight left  
+            rightHt = getTreeHeight right            
 
 ---- credit for next 2 functions: http://stackoverflow.com/a/19083798/409976
 indent :: [String] -> [String]
