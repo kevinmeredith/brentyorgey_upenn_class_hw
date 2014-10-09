@@ -4,6 +4,7 @@ module Program (compile, convert) where
 
 import StackVM
 import Text.Regex
+import Control.Applicative
 
 ---- The various expressions our VM understands.
 --data StackExp = PushI Integer
@@ -19,14 +20,15 @@ import Text.Regex
 
 compile :: String -> Maybe Program
 compile = (compile' . words)
-   where compile' []                      = Nothing
-         compile' ("PushI": x : xs)       = if isInteger x then Just $ PushI (read x :: Integer) else Nothing
-         compile' ("PushB": "True" :  xs) = Just $ PushB True
-         compile' ("PushB": "False" : xs) = Just $ PushB False
-         compile' ("Add":xs)              = Just Add
-         compile' ("Mul":xs)              = Just Mul
-         compile' ("And":xs)              = Just And
-         compile' ("Or" :xs)              = Just Or
+   where compile' []                      = Just []
+         compile' ("PushI": x : xs)       = if isInteger x then Just ((:) (PushI (read x :: Integer))) <*> compile' xs
+         	                                else Nothing
+         compile' ("PushB": "True" :  xs) = Just ((:) (PushB True)) <*> compile' xs
+         compile' ("PushB": "False" : xs) = Just ((:) (PushB False)) <*> compile' xs
+         compile' ("Add":xs)              = Just ((:) Add) <*> compile' xs
+         compile' ("Mul":xs)              = Just ((:) Mul) <*> compile' xs
+         compile' ("And":xs)              = Just ((:) And) <*> compile' xs
+         compile' ("Or" :xs)              = Just ((:) Or) <*> compile' xs
          compile' _                       = Nothing
 
 -- Expects a String containing an individual command
