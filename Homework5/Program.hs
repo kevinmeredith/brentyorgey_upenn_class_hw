@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeSynonymInstances #-}
-module Program (compile) where
+{-# OPTIONS_GHC -Wall #-}
+module Program (compile, convert) where
 
 import StackVM
 import Text.Regex
@@ -16,24 +17,39 @@ import Text.Regex
 --type Stack   = [StackVal]
 --type Program = [StackExp]
 
---compile :: String -> Maybe Program
---compile [] = Nothing
---compile [] 
+compile :: String -> Maybe Program
+compile = (compile' . words)
+   where compile' []                      = Nothing
+         compile' ("PushI": x : xs)       = if isInteger x then Just $ PushI (read x :: Integer) else Nothing
+         compile' ("PushB": "True" :  xs) = Just $ PushB True
+         compile' ("PushB": "False" : xs) = Just $ PushB False
+         compile' ("Add":xs)              = Just Add
+         compile' ("Mul":xs)              = Just Mul
+         compile' ("And":xs)              = Just And
+         compile' ("Or" :xs)              = Just Or
+         compile' _                       = Nothing
 
+-- Expects a String containing an individual command
+-- If it's valid, return Just; otherwise Nothing
 convert :: String -> Maybe StackExp
-convert = (convert' . words)
-  where convert' [] = Nothing :: [String] -> Maybe StackExp
-        convert' ("PushI": x : [])       = if isInteger x then Just $ PushI (read x :: Integer) else Nothing
-        convert' ("PushB": "True" : [])  = Just True
-        convert' ("PushB": "False" : []) = Just False
-        convert' ("Add":[])              = Just Add
-        convert' ("Mul":[])              = Just Mul
-        convert' ("And":[])              = Just And
-        convert' ("Or" :[])              = Just Or
-        convert' _                       = Nothing
+convert = (compile' . words)
+  where compile' []                      = Nothing 
+        compile' ("PushI": x : [])       = if isInteger x then Just $ PushI (read x :: Integer) else Nothing
+        compile' ("PushB": "True" : [])  = Just $ PushB True
+        compile' ("PushB": "False" : []) = Just $ PushB False
+        compile' ("Add":[])              = Just Add
+        compile' ("Mul":[])              = Just Mul
+        compile' ("And":[])              = Just And
+        compile' ("Or" :[])              = Just Or
+        compile' _                       = Nothing
 
 isInteger :: String -> Bool
 isInteger = matches' mkIntegerRegex
 
 mkIntegerRegex :: Regex
-mkIntegerRegex = mkRegex "^[1-9]+[0-9]*$"        
+mkIntegerRegex = mkRegex "^[0-9]+$"        
+
+matches' :: Regex -> String -> Bool
+matches' r x 
+   | matchRegex r x == Nothing = False
+   | otherwise                 = True

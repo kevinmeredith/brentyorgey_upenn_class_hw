@@ -1,3 +1,4 @@
+-- From Brent Yorgey's UPenn class (http://www.seas.upenn.edu/~cis194/spring13/hw/01-intro.pdf)
 {-# OPTIONS_GHC -Wall #-}
 module Calc where
 
