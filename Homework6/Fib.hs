@@ -10,11 +10,12 @@ fib n
 fibs :: [Integer]
 fibs = Prelude.map fib [0..]
 
--- improved fibs using accumulator (of already calculated fibonacci values)
+-- improved fibs using memoized (of already calculated fibonacci values)
 fibsImproved :: [Integer]
-fibsImproved = fibsImproved' 0 M.empty 0
-        where fibsImproved' n memoized acc 
-               | n == 0         = acc
-               | M.member n acc = fibsImproved' (n-1) memoized ((M.! memoized n) + acc)    -- M.member feels wrong
-               | otherwise      = let calced = fib n 
-                                  in fibsImproved' (n-1) (M.insert n calced $ acc) (calced + acc)
+fibsImproved = fibsImproved' 0 M.empty
+
+fibsImproved' :: Integer -> Map Integer Integer -> [Integer]
+fibsImproved' n memoized   
+  | M.member n memoized = (M.! memoized n) : fibsImproved' (n+1) memoized -- M.member feels wrong
+  | otherwise           = let calced = fib n
+                          in calced : fibsImproved' (n+1) (M.insert n calced $ memoized)
