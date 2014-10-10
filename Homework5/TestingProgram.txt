@@ -1,0 +1,7 @@
+*Program Control.Applicative> :{
+*Program Control.Applicative|   let x = do
+*Program Control.Applicative|     xs <- compile "PushI 5 PushI 10 Add"
+*Program Control.Applicative|     return $ stackVM xs
+*Program Control.Applicative| :}
+*Program Control.Applicative> x
+Just (Right (IVal 15))
