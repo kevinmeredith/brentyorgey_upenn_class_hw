@@ -15,7 +15,7 @@ fibsImproved :: [Integer]
 fibsImproved = fibsImproved' 0 M.empty
 
 fibsImproved' :: Integer -> Map Integer Integer -> [Integer]
-fibsImproved' n memoized   
-  | M.member n memoized = (M.! memoized n) : fibsImproved' (n+1) memoized -- M.member feels wrong
-  | otherwise           = let calced = fib n
-                          in calced : fibsImproved' (n+1) (M.insert n calced $ memoized)
+fibsImproved' n memoized  = case maybeMember of Just x  -> x : fibsImproved' (n+1) memoized
+                                                Nothing -> calced : fibsImproved' (n+1) (M.insert n calced $ memoized)
+                            where maybeMember = M.lookup n memoized
+                                  calced      = fib n
