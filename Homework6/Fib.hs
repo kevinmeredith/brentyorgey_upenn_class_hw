@@ -1,3 +1,6 @@
+{-# OPTIONS_GHC -Wall #-}
+module Fib where
+
 import Data.Map as M 
 
 fib :: Integer -> Integer
