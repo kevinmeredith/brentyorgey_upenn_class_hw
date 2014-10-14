@@ -23,7 +23,9 @@ instance Show a => Show (Stream a) where
 streamRepeat :: a -> Stream a
 streamRepeat x = Stream (x, streamRepeat x)
 
---streamMap :: (a -> b) -> Stream a -> Stream b
---streamMap f (Stream x) = Stream $ f x 
+streamMap :: (a -> b) -> Stream a -> Stream b
+streamMap f (Stream (x, rest)) = Stream (f x, streamMap f rest)
 
---streamFromSeed :: a -> (a -> a) -> Stream a
+-- Given a start value and function, generate a stream by applying fn to each Stream value
+streamFromSeed :: a -> (a -> a) -> Stream a
+streamFromSeed x f = Stream $ (x, streamFromSeed (f x) f)
