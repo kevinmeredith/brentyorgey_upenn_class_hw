@@ -29,3 +29,17 @@ streamMap f (Stream (x, rest)) = Stream (f x, streamMap f rest)
 -- Given a start value and function, generate a stream by applying fn to each Stream value
 streamFromSeed :: a -> (a -> a) -> Stream a
 streamFromSeed x f = Stream $ (x, streamFromSeed (f x) f)
+
+-- stream of natural numbers (0,1,2,...)
+nat :: Stream Integer
+nat = streamFromSeed 0 (+1)
+
+-- `ruler` function
+--where the nth element in the stream (assuming the first element
+--corresponds to n = 1) is the largest power of 2 which evenly
+--divides n
+ruler :: Stream Integer
+ruler = streamMap f startAtOne
+    where f x        = if (odd x) then 0 else g x 0
+          g y acc    = if y == 0 then acc else g (y-2) (acc+1)
+          startAtOne = streamFromSeed 1 (+1)
