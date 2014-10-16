@@ -38,8 +38,31 @@ nat = streamFromSeed 0 (+1)
 --where the nth element in the stream (assuming the first element
 --corresponds to n = 1) is the largest power of 2 which evenly
 --divides n
-ruler :: Stream Integer
-ruler = streamMap f startAtOne
-    where f x        = if (odd x) then 0 else g x 0
-          g y acc    = if y == 0 then acc else g (y-2) (acc+1)
-          startAtOne = streamFromSeed 1 (+1)
+-- it has the 'Cheat' suffix since it's dividing
+rulerCheat :: Stream Integer
+rulerCheat = streamMap doDivBy2 startAtOne
+    where startAtOne = streamFromSeed 1 (+1) :: Stream Integer
+
+-- look at RealFracWork.hs to solve type problem
+-- note that `doDivBy2` is a partial, hack function
+doDivBy2 :: Integer -> Integer
+doDivBy2 x = doDivBy2' x 0
+              where doDivBy2' 1 acc = acc
+                    doDivBy2' y acc = doDivBy2' (y `div` 2) (acc+1)
+
+--interleave :: Stream a -> Stream a -> Stream a
+--interleave 
+
+-- 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, ...
+
+-- every other 0
+
+-- , 1 2 1 3 1 2 1 4, ...
+
+-- every other is 1
+-- 2, 3, 2, 4
+
+-- 010x where x = 2, 3, 2, 4
+
+-- hypothesis: 010x where odd instance is 2, otherwise increasing number (3, 4, ...)
+-- need to prove by completing above `rulerCheat`
