@@ -18,17 +18,18 @@ import Control.Applicative
 --type Stack   = [StackVal]
 --type Program = [StackExp]
 
+
 compile :: String -> Maybe Program
 compile = (compile' . words)
    where compile' []                      = Just []
          compile' ("PushI": x : xs)       = if isInteger x then Just ((:) (PushI (read x :: Integer))) <*> compile' xs
          	                                else Nothing
-         compile' ("PushB": "True" :  xs) = Just ((:) (PushB True)) <*> compile' xs
-         compile' ("PushB": "False" : xs) = Just ((:) (PushB False)) <*> compile' xs
-         compile' ("Add":xs)              = Just ((:) Add) <*> compile' xs
-         compile' ("Mul":xs)              = Just ((:) Mul) <*> compile' xs
-         compile' ("And":xs)              = Just ((:) And) <*> compile' xs
-         compile' ("Or" :xs)              = Just ((:) Or) <*> compile' xs
+         compile' ("PushB": "True" :  xs) = (PushB True :)  <$> compile' xs
+         compile' ("PushB": "False" : xs) = (PushB False :) <$> compile' xs
+         compile' ("Add":xs)              = (Add :)         <$> compile' xs
+         compile' ("Mul":xs)              = (Mul :)         <$> compile' xs
+         compile' ("And":xs)              = (And :)         <$> compile' xs
+         compile' ("Or" :xs)              = (Or :)          <$> compile' xs
          compile' _                       = Nothing
 
 -- Expects a String containing an individual command
