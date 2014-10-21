@@ -39,21 +39,22 @@ nat = streamFromSeed 0 (+1)
 --corresponds to n = 1) is the largest power of 2 which evenly
 --divides n
 -- it has the 'Cheat' suffix since it's dividing (as ruled out by the instructions)
-rulerCheat :: Stream Integer
-rulerCheat = streamMap f startAtOne
-    where startAtOne = streamFromSeed 1 (+1) :: Stream Integer
+--rulerCheat :: Stream Integer
+--rulerCheat = streamMap f startAtOne
+--    where startAtOne = streamFromSeed 1 (+1) :: Stream Integer
 
 -- ruler function starts with 0 and every other is 0
--- starting with 1, it repeats (between 0s) to (2^1 - 1) times
+-- starting with 1, it repeats (between 0s) to (2^1 - 1) time
+
 
 --ruler :: Stream Integer
 --ruler = interleave zeros alternating
 --  where zeros       = streamRepeat 0
 --        alternating = streamFromSeed 1 ()
 
---interleave :: Stream a -> Stream a -> Stream a
---interleave Stream(x, str1) Stream(y, str2)) = Stream(x, Stream(y, rest))
---          where rest = interleave str1 str2
+interleave :: Stream a -> Stream a -> Stream a
+interleave (Stream(x, str1)) (Stream(y, str2)) = Stream(x, Stream(y, rest))
+          where rest = interleave str1 str2
 
 -- 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, ...
 
