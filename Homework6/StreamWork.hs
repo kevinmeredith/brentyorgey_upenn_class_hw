@@ -38,12 +38,16 @@ nat = streamFromSeed 0 (+1)
 --where the nth element in the stream (assuming the first element
 --corresponds to n = 1) is the largest power of 2 which evenly
 --divides n
-ruler :: Stream Integer
-ruler = ruler' 0 
+rulerNonterminating :: Stream Integer
+rulerNonterminating = ruler' 0 
 
 -- TODO: figure out how to call as inner function (tried but got type error - how to add signature here?)
 ruler' :: Integer -> Stream Integer
-ruler' n = interleave (streamRepeat n) (ruler' (n+1))
+ruler' n = interleave (streamRepeat n) $ruler' (n+1)
+
+-- not terminating either
+ruler :: Integer -> Stream Integer -> Stream Integer
+ruler acc str = interleave str (ruler (acc+1) (streamRepeat acc))
 
 --ruler = interleave (streamRepeat 0) (interleave (streamRepeat 1) (streamRepeat 2))
 
