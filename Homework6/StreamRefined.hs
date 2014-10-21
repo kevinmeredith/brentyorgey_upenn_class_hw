@@ -1,3 +1,6 @@
+{-# OPTIONS_GHC -Wall #-}
+module StreamRefined where
+
 -- Stream is an element followed by a Stream
 data Stream a = Cons a (Stream a)
 
@@ -22,5 +25,3 @@ ruler = ruler' 0
 
 ruler' :: Integer -> Stream Integer
 ruler' n = interleave (streamRepeat n) (ruler' (n+1))
-
-rulerrrr :: Stream Integer
