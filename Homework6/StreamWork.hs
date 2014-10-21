@@ -38,25 +38,18 @@ nat = streamFromSeed 0 (+1)
 --where the nth element in the stream (assuming the first element
 --corresponds to n = 1) is the largest power of 2 which evenly
 --divides n
--- it has the 'Cheat' suffix since it's dividing (as ruled out by the instructions)
---rulerCheat :: Stream Integer
---rulerCheat = streamMap f startAtOne
---    where startAtOne = streamFromSeed 1 (+1) :: Stream Integer
+ruler :: Stream Integer
+ruler = ruler' 0 
 
--- ruler function starts with 0 and every other is 0
--- starting with 1, it repeats (between 0s) to (2^1 - 1) time
+-- TODO: figure out how to call as inner function (tried but got type error - how to add signature here?)
+ruler' :: Integer -> Stream Integer
+ruler' n = interleave (streamRepeat n) (ruler' (n+1))
 
-
---ruler :: Stream Integer
---ruler = interleave zeros alternating
---  where zeros       = streamRepeat 0
---        alternating = streamFromSeed 1 ()
+--ruler = interleave (streamRepeat 0) (interleave (streamRepeat 1) (streamRepeat 2))
 
 interleave :: Stream a -> Stream a -> Stream a
 interleave (Stream(x, str1)) (Stream(y, str2)) = Stream(x, Stream(y, rest))
           where rest = interleave str1 str2
-
--- 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, ...
 
 -- every other 0
 
