@@ -20,6 +20,10 @@ streamRepeat x = Cons x (streamRepeat x)
 --interleave :: Stream a -> Stream a -> Stream a
 --interleave (Cons x strX) (Cons y strY) = Cons x (Cons y (interleave strX strY))
 
+-- mjolka (on Stack Exchange) explained to me why my original `interleave` was wrong.
+-- Bottom line - we think that pattern matching on the second argument never terminated
+--               since the second argument of `interleave` (when called by ruler') always was
+--               infinitely recursive.
 interleave :: Stream a -> Stream a -> Stream a
 interleave (Cons x xs) ys = Cons x (interleave ys xs)
 
