@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wall #-}
-module StreamRefined where
+module StreamRefined ( Stream(Cons), streamToList, streamRepeat, streamMap, interleave, ruler, combineStreams ) where
 
 -- Stream is an element followed by a Stream
 data Stream a = Cons a (Stream a)
@@ -16,6 +16,14 @@ instance Show a => Show (Stream a) where
 
 streamRepeat :: a -> Stream a
 streamRepeat x = Cons x (streamRepeat x)	                            
+
+streamMap :: (a -> b) -> Stream a -> Stream b
+streamMap f (Cons x xs) = Cons (f x) rest
+   where rest = streamMap f xs
+
+combineStreams :: (a -> b -> c) -> Stream a -> Stream b -> Stream c
+combineStreams f (Cons x xs) (Cons y ys) = Cons (f x y) rest
+   where rest = combineStreams f xs ys
 
 --interleave :: Stream a -> Stream a -> Stream a
 --interleave (Cons x strX) (Cons y strY) = Cons x (Cons y (interleave strX strY))
