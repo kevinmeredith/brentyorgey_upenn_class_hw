@@ -30,10 +30,12 @@ multStreams (Cons x xs) b@(Cons y ys) =
 
 -- division of streams
 -- Q = (a0/b0) + x((1/b0)(A` − QB`)).
+-- where Q = A / B
 
 instance Fractional (Stream Integer) where 
-	(/) xs ys = divStreams xs ys
+    (/) xs ys = divStreams xs ys
 
 divStreams :: Stream Integer -> Stream Integer -> Stream Integer
-divStreams (Cons x xs) (Cons y ys) =
-	Cons (x `div` y) ()
+divStreams a@(Cons x xs) b@(Cons y ys) = 
+	Cons (x `div` y) (streamMap ((1 `div` y) *) xs - (multStreams q ys) ) 
+      where q = divStreams a b
