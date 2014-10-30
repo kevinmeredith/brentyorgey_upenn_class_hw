@@ -14,6 +14,15 @@ instance Monoid (Bool') where
 
 -- Challenge: Make function an instance of Monoid
 
---instance Monoid (a -> b) where
---    mempty f = f
---    mappend f g = g . f
+class Monoid' a where
+	mempty  :: a -> a
+	mappend :: a -> a -> a
+
+instance Monoid' (a -> b) where
+    mempty f    = f
+    mappend f g = f . g
+
+g :: Integer -> Integer
+g = (+ 10)
+
+-- :t g . g == Integer -> Integer
