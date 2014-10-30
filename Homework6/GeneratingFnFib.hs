@@ -11,7 +11,7 @@ x = Cons 0 (Cons 1 $ streamRepeat 0)
 instance Num (Stream Integer) where
 	fromInteger x = Cons x $ streamRepeat 0
 	negate        = streamMap (* (-1)) 
-	(+) xs ys     = combineStreams (+) xs ys
+	(Cons x xs) + (Cons y ys) = Cons (x+y) (xs + ys)
 	(*) xs ys     = multStreams xs ys
 	abs           = streamMap abs
 
@@ -35,7 +35,10 @@ multStreams (Cons x xs) b@(Cons y ys) =
 instance Fractional (Stream Integer) where 
     (/) xs ys = divStreams xs ys
 
+-- credit: @mjolka (http://codereview.stackexchange.com/a/68144/31595)
 divStreams :: Stream Integer -> Stream Integer -> Stream Integer
-divStreams a@(Cons x xs) b@(Cons y ys) = 
-	Cons (x `div` y) (streamMap ((1 `div` y) *) xs - (multStreams q ys) ) 
-      where q = divStreams a b
+divStreams (Cons x xs) (Cons y ys) =
+	let q = Cons (x `div` y) (streamMap ((1 `div` y) *) (xs - q * ys)) in q
+
+fibs3 :: Stream Integer
+fibs3 = x / (1 - x - x^2)

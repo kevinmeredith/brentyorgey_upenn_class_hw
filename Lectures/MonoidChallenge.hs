@@ -15,4 +15,5 @@ instance Monoid (Bool') where
 -- Challenge: Make function an instance of Monoid
 
 --instance Monoid (a -> b) where
---	mempe
+--    mempty f = f
+--    mappend f g = g . f
