@@ -4,6 +4,7 @@
 module JoinList where
 
 import Data.Monoid
+import Sized
 
 data JoinList m a = Empty
                   | Single m a
@@ -18,12 +19,27 @@ data JoinList m a = Empty
 
 
 tag :: Monoid m => JoinList m a -> m
-tag Empty                 = mempty
-tag (Single x _)          = x
-tag (Append x left right) = x  --`mappend` (tag left) `mappend` (tag right)
+tag Empty          = mempty
+tag (Single x _)   = x
+tag (Append x _ _) = x  --`mappend` (tag left) `mappend` (tag right)
 
 jl1 :: JoinList (Product Integer) String
 jl1 = Append (Product 100) (Single (Product 25) "foo") (Single (Product 4) "bar")
 
 jl2 :: JoinList (Product Integer) String
 jl2 = Append (Product 50) (Single (Product 25) "bippy") (Single (Product 2) "baz")
+
+indexJ :: (Sized b, Monoid b) => Int -> JoinList b a -> Maybe a
+indexJ _ Empty = Nothing
+indexJ i (Single s x)
+  | (getSize . size) s == i = Just x
+  | otherwise               = Nothing
+indexJ i (Append _ left right) 
+  | (getSize . size . tag) left >= i = indexJ i left
+  | otherwise                        = indexJ i right
+
+jlIndex1 :: JoinList Size String
+jlIndex1 = Append (Size 1) (Single (Size 0) "foo") (Single (Size 1) "bar")
+
+jlIndex2 :: JoinList Size String
+jlIndex2 = Append (Size 2) (Single (Size 0) "foo") (Append (Size 2) (Single (Size 1) "bar") (Single (Size 2) "baz"))
