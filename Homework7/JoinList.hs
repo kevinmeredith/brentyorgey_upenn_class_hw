@@ -14,11 +14,16 @@ data JoinList m a = Empty
 (+++) Empty               y                    = y
 (+++) x                   Empty                = x
 (+++) left@(Single _ _)   right@(Single _ _)   = Append (tag $ Append mempty left right) left right
-(+++) left@(Single _ _)   right@(Append _ _ _) = Append (tag left `mappend` tag right) left right
-(+++) left@(Append _ _ _) right@(Single _ _)   = Append (tag left `mappend` tag right) left right
-(+++) left@(Append _ _ _) right@(Append _ _ _) = Append (tag left `mappend` tag right) left right
+(+++) left                right                = Append (tag left `mappend` tag right) left right
+
 
 tag :: Monoid m => JoinList m a -> m
 tag Empty                 = mempty
 tag (Single x _)          = x
 tag (Append x left right) = x  --`mappend` (tag left) `mappend` (tag right)
+
+jl1 :: JoinList (Product Integer) String
+jl1 = Append (Product 100) (Single (Product 25) "foo") (Single (Product 4) "bar")
+
+jl2 :: JoinList (Product Integer) String
+jl2 = Append (Product 50) (Single (Product 25) "bippy") (Single (Product 2) "baz")
