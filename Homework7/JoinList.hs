@@ -28,19 +28,20 @@ jl2 :: JoinList (Product Integer) String
 jl2 = Append (Product 50) (Single (Product 25) "bippy") (Single (Product 2) "baz")
 
 indexJ :: (Sized b, Monoid b) => Int -> JoinList b a -> Maybe a
-indexJ _ Empty = Nothing
-indexJ i (Single s x)
-  | (getSize . size) s == i = Just x
-  | otherwise               = Nothing
-indexJ i (Append _ left right) 
-  | (getSize . size . tag) left >= i = indexJ i left
-  | otherwise                        = indexJ i right
+indexJ _ Empty          = Nothing
+indexJ i (Single _ x)
+  | i == 0              = Just x
+  | otherwise           = Nothing
+indexJ i (Append j left right) 
+  | 
+  where f = getSize . size . tag
+        g = getSize . size
 
 jlIndex1 :: JoinList Size String
-jlIndex1 = Append (Size 1) (Single (Size 0) "foo") (Single (Size 1) "bar")
+jlIndex1 = Append (Size 2) (Single (Size 1) "foo") (Single (Size 1) "bar")
 
 jlIndex2 :: JoinList Size String
-jlIndex2 = Append (Size 2) (Single (Size 0) "foo") (Append (Size 2) (Single (Size 1) "bar") (Single (Size 2) "baz"))
+jlIndex2 = Append (Size 3) (Single (Size 1) "foo") (Append (Size 2) (Single (Size 1) "bar") (Single (Size 1) "baz"))
 
 --dropJ ::(Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
 --dropJ _ Empty = Empty
