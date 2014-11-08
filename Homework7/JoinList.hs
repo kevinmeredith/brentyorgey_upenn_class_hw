@@ -47,7 +47,7 @@ jlIndex2 :: JoinList Size String
 jlIndex2 = Append (Size 3) (Single (Size 1) "foo") (Append (Size 2) (Single (Size 1) "bar") (Single (Size 1) "baz"))
 
 jlIndex3 :: JoinList Size String
-jlIndex3 = Append (Size 4) Empty
+jlIndex3 = Append (Size 4) (Single 1 "biz") jlIndex2
 
 --dropJ ::(Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
 --dropJ _ Empty = Empty
