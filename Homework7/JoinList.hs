@@ -59,6 +59,15 @@ dropJ i (Append _ left right)
   | otherwise                 = dropJ i left
     where leftHt = (getSize. size . tag) left
 
+takeJ :: (Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
+takeJ _ Empty          = Empty
+takeJ i _ | i <= 0     = Empty
+takeJ _ s@(Single _ _) = s
+takeJ i (Append m left right)
+ | i >= leftHt         = Append m    left         (takeJ (i-leftHt) right)
+ | otherwise           = Append m (takeJ i left)         Empty
+   where leftHt   = (getSize. size . tag) left
+
 (!!?) :: [a] -> Int -> Maybe a
 []     !!? _         = Nothing
 _      !!? i | i < 0 = Nothing
