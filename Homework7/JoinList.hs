@@ -6,6 +6,7 @@ module JoinList where
 import Data.Monoid
 import Sized
 import Test.QuickCheck
+import Scrabble
 
 data JoinList m a = Empty
                   | Single m a
@@ -79,4 +80,5 @@ jToList Empty          = []
 jToList (Single _ x)   = [x]
 jToList (Append _ x y) = jToList x ++ jToList y
 
--- testing via QuickCheck
+scoreLine :: String -> JoinList Score String
+scoreLine x = Single (scoreString x) x
