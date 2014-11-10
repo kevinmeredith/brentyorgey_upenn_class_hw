@@ -1,7 +1,7 @@
 -- From Brent Yorgey's UPenn class (http://www.seas.upenn.edu/~cis194/spring13/hw/01-intro.pdf)
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall #-}
-module JoinList where
+module JoinList (JoinList, (+++)) where
 
 import Data.Monoid
 import Sized
