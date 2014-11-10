@@ -5,6 +5,7 @@ module JoinList where
 
 import Data.Monoid
 import Sized
+import Test.QuickCheck
 
 data JoinList m a = Empty
                   | Single m a
@@ -49,15 +50,14 @@ jlIndex2 = Append (Size 3) (Single (Size 1) "foo") (Append (Size 2) (Single (Siz
 jlIndex3 :: JoinList Size String
 jlIndex3 = Append (Size 4) (Single 1 "biz") jlIndex2
 
---dropJ ::(Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
---dropJ _ Empty = Empty
---dropJ i single@(Single _ _)
---  | i == 0    = single
---  | otherwise = Empty
---dropJ i append@(Append _ left right) 
---  | i == 0                           = append
---  | (getSize . size . tag) left >  i = indexJ i left
---  | otherwise                        = indexJ i right
+dropJ ::(Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
+dropJ _ Empty = Empty
+dropJ i jl | i <= 0           = jl
+dropJ _ (Single _ _)          = Empty
+dropJ i (Append _ left right) 
+  | i >= leftHt               = dropJ (i-leftHt) right
+  | otherwise                 = dropJ i left
+    where leftHt = (getSize. size . tag) left
 
 (!!?) :: [a] -> Int -> Maybe a
 []     !!? _         = Nothing
