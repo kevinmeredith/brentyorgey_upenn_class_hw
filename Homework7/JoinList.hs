@@ -1,7 +1,7 @@
 -- From Brent Yorgey's UPenn class (http://www.seas.upenn.edu/~cis194/spring13/hw/01-intro.pdf)
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall #-}
-module JoinList (JoinList, (+++)) where
+module JoinList where
 
 import Data.Monoid
 import Sized
@@ -45,20 +45,31 @@ indexJ i (Append _ left right)
 jlIndex1 :: JoinList Size String
 jlIndex1 = Append (Size 2) (Single (Size 1) "foo") (Single (Size 1) "bar")
 
+jlIndex12 :: JoinList Size String
+jlIndex12 = Append (Size 2) (Single (Size 1) "pip") (Single (Size 1) "pap")
+
 jlIndex2 :: JoinList Size String
 jlIndex2 = Append (Size 3) (Single (Size 1) "foo") (Append (Size 2) (Single (Size 1) "bar") (Single (Size 1) "baz"))
 
 jlIndex3 :: JoinList Size String
 jlIndex3 = Append (Size 4) (Single 1 "biz") jlIndex2
 
+-- dropJ 1 bug demonstrates a previous bug
+bug :: JoinList Size String
+bug = Append (Size 3) (Append (Size 2) (Single (Size 1) "bar") (Single (Size 1) "baz")) (Single (Size 1) "foo")
+
+test :: JoinList Size String
+test = Append (Size 4) jlIndex1 jlIndex12 
+
 dropJ ::(Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
 dropJ _ Empty = Empty
 dropJ i jl | i <= 0           = jl
 dropJ _ (Single _ _)          = Empty
-dropJ i (Append _ left right) 
+dropJ i (Append m left right) 
   | i >= leftHt               = dropJ (i-leftHt) right
-  | otherwise                 = dropJ i left
-    where leftHt = (getSize. size . tag) left
+  | otherwise                 = Append m (dropJ i left) right
+    where leftHt  = (getSize . size . tag) left     
+
 
 takeJ :: (Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
 takeJ _ Empty          = Empty
