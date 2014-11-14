@@ -23,8 +23,13 @@ data Tree a = Node {
 	subForest :: [Tree a]
 }  deriving (Show)
 
+-- original, not standard 
+-- thanks to @ski on #haskell
 treeFold :: (b -> [b] -> b) -> (a -> b) -> Tree a -> b
 treeFold f g tree = f (g (rootLabel tree)) (map (treeFold f g) (subForest tree)) 
+
+treeFold' :: (a -> [b] -> b) -> Tree a -> b
+treeFold' f (Node x ts) = f x (map (treeFold' f) ts)
 
 add :: (Num a) => Tree a -> a
 add = treeFold (\x y -> x + sum y) (id)
@@ -70,3 +75,5 @@ guestListWith = GL [e1, e2, e3, e4] 500
 
 guestListWithout :: GuestList
 guestListWithout = GL [e1, e2, e3, e4] 10000
+
+--	maxFun :: Tree Employee -> GuestList
