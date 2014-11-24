@@ -1,3 +1,8 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -Wall -XDataKinds -fno-warn-orphans #-}
+
+import Data.Functor
+
 -- #1
 data MyEither e a = MyRight a 
                   | MyLeft e 
@@ -42,3 +47,34 @@ foldTree' f g (Node xs) = g $ map (foldTree' f g) xs
 -- #4
 -- Give an example of a type of kind * -> * which cannot be made an 
 -- instance of Functor (without using undefined).
+
+--data Foo a = Foo (a -> Bool)
+
+--instance Functor (Foo) where
+--  fmap f (Foo g) = Foo (f . g) 
+
+-- #5
+-- The composition of two Functors is also a Functor. 
+-- helped: http://stackoverflow.com/questions/19774564/what-does-it-mean-to-compose-two-functors
+newtype Comp f g a = Comp { unComp :: f (g a) }
+
+compose :: f (g a) -> Comp f g a
+compose = Comp
+
+decompose :: Comp f g a -> f (g a)
+decompose = unComp
+
+instance (Functor f, Functor g) => Functor (Comp f g) where
+	fmap f = compose . fmap (fmap f) . decompose 
+
+data Cons a = Empty | Cons a (Cons a) deriving Show
+
+---- evil functor
+instance Functor Cons where
+	fmap _ Empty       = Empty
+	fmap f (Cons x xs) = Cons (f x) (Cons (f x) (fmap f xs))
+
+-- extract first Cons 
+foo :: Cons a -> Maybe a
+foo Empty      = Nothing
+foo (Cons a _) = Just a 
