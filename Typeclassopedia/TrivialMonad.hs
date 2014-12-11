@@ -61,3 +61,14 @@ bar x = W (x*2)
 -- (m >>= f) >>= g ≡ m >>= (\x -> f x >>= g)
 associativityLaw :: W Int -> Bool
 associativityLaw w = ((w >>= foo) >>= bar) == (w >>= (\x -> foo x >>= bar))
+
+-- Exercise 4: 
+-- define `join :: W (W a) -> W a` using the Monad API and no explicit unwrapping.
+join' :: W (W a) -> W a
+join' w = do
+  x <- w
+  x 
+
+-- now without `do`
+join'' :: W (W a) -> W a
+join'' w = w >>= (\x -> x)
