@@ -16,9 +16,9 @@ instance (MyMonad []) where
 	ret x       = [x]
 	flatMap m f = (concat . fmap (f)) m 	
 
--- Implement a Monad instance for ((->) e).
-instance (MyMonad (-> e)) where
-	ret x = 
+---- Implement a Monad instance for ((->) e).
+--instance (MyMonad (-> e)) where
+--	ret x = 
 
 -- side attempt - http://stackoverflow.com/questions/27415252/implementing-concat-for-cons-a
 instance Functor Cons where
@@ -29,12 +29,18 @@ instance Functor Cons where
 --	return x = Cons x Empty
 --	m >>= f  = flatten $ fmap f m
 
---flatten :: Cons (Cons a) -> Cons a
---flatten Empty               = Empty
---flatten (Cons c@(Cons _ _)) = c
+flatten :: Cons (Cons a) -> Cons a
+flatten Empty                = Empty
+flatten (Cons (Empty) ys)    = flatten ys
+flatten (Cons (Cons x xs) ys) = Cons x (flatten (Cons xs ys))
 
+test1 :: Cons (Cons Int)
+test1 = Cons (Cons 5 Empty) Empty
 
+test2 :: Cons (Cons Int)
+test2 = Cons (Cons 5 (Cons 10 Empty)) Empty
 
-
+test3 :: Cons (Cons Int)
+test3 = Cons (Cons 5 (Cons 10 (Cons 20 Empty))) test2
 
 
