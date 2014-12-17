@@ -93,7 +93,14 @@ instance Functor f => Functor (Free f) where
   fmap g (Var x)  = Var (g x)
   fmap g (Node x) = Node $ fmap (\y -> fmap g y) x
 
-instance Functor f => Monad (Free f) where
+instance Functor f => Applicative (Free f) where
+	pure x                = Var x
+	(Var f)  <*> (Var x)  = Var (f x)
+	(Var f)  <*> (Node x) = Node $ fmap (\y -> fmap f x) f
+	(Node f) <*> (Var y)  = Var $ fmap (\g -> fmap g y) f
+    
+
+instance Applicative f => Monad (Free f) where
 	return  x      = Var x
 	(Var x) >>= f  = f x
 	(Node x) >>= f = Node $ fmap (\y -> y >>= f) x
