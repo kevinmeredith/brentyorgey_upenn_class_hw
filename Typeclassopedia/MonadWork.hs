@@ -36,9 +36,7 @@ instance Applicative Cons where
 append :: Cons a -> Cons a -> Cons a
 append Empty x           = x
 append x Empty           = x
-append (Cons x Empty) ys = Cons x ys
 append (Cons x xs) ys    = Cons x (append xs ys)
-
 
 consToList :: Cons a -> [a]
 consToList Empty       = []
@@ -47,14 +45,6 @@ consToList (Cons x xs) = x : consToList xs
 listToCons :: [a] -> Cons a
 listToCons []     = Empty
 listToCons (x:xs) = Cons x $ listToCons xs
-
--- TODO!
--- write quickChecks tests to verify that Applicative Cons works in the same way as the real List type, `[]`
---instance Arbitrary [Int] where
---	arbitrary = elements [ [1..5], [0..100], [4,99,-444] ]
-
---makeArbitraryListInts :: Gen [Int]
---makeArbitraryListInts = arbitrary
 
 -- Applicative Cons behaves "same as" Applicative [] for `pure`
 pureLaw :: Int -> Bool
@@ -89,7 +79,31 @@ test3 = Cons (Cons 5 (Cons 10 (Cons 20 Empty))) test2
 
 ---- Implement a Monad instance for ((->) e).
 -- helpful post - http://stackoverflow.com/a/27415709/409976
+-- waiting for help on whether to pass in a type after ->
 --instance (MyMonad (-> e)) where
---	ret x       = const x
+--	ret x       = \_ -> x
 --	flatMap m f = undefined
 
+-- Exercise 3: Implement Functor and Monad instances for Free f.
+-- Assume that `f` has a Functor instance
+data Free f a = Var a
+               | Node (f (Free f a)) 
+
+instance Functor f => Functor (Free f) where
+  fmap g (Var x)  = Var (g x)
+  fmap g (Node x) = Node $ fmap (\y -> fmap g y) x
+
+  -- a -> b 
+  -- a -> Free f b
+
+-- (>>=) in terms of fmap, pure, and (<*>). We are given a value x 
+-- of type m a, and a function k of type a -> m b               
+-- :t (>>=) :: m a -> (a -> m b) -> m b
+-- :t (<*>) :: f (a -> b) -> f a -> f b
+
+-- k >>= x = pure (x) <*> k 
+--         = m (a -> m b) <*> m a 
+
+
+
+-- Node (Just "foo") :: Node Maybe Int
