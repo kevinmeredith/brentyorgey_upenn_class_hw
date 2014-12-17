@@ -93,6 +93,11 @@ instance Functor f => Functor (Free f) where
   fmap g (Var x)  = Var (g x)
   fmap g (Node x) = Node $ fmap (\y -> fmap g y) x
 
+instance Functor f => Monad (Free f) where
+	return  x      = Var x
+	(Var x) >>= f  = f x
+	(Node x) >>= f = Node $ fmap (\y -> y >>= f) x
+
   -- a -> b 
   -- a -> Free f b
 
