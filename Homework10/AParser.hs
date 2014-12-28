@@ -1,7 +1,5 @@
-{- CIS 194 HW 10
-   due Monday, 1 April
--}
-
+-- http://www.cis.upenn.edu/~cis194/spring13/hw/10-applicative.pdf
+{-# OPTIONS_GHC -Wall #-}
 module AParser where
 
 import           Control.Applicative
@@ -44,7 +42,7 @@ Just ('x',"yz")
 
 -}
 
--- For convenience, we've also provided a parser for positive
+-- For convenience, we've also provided a parse--r for positive
 -- integers.
 posInt :: Parser Integer
 posInt = Parser f
@@ -59,10 +57,25 @@ posInt = Parser f
 ------------------------------------------------------------
 
 -- Exercise 1: Implement Functor for Parser
+-- credit to `http://stackoverflow.com/a/27673488/409976` for help in answering
 
 first :: (a -> b) -> (a, c) -> (b, c)
 first f (a, c) = (f a, c) 
 
 instance Functor (Parser) where
-  fmap _ Nothing    = Nothing
-  fmap g (Parser f) = Parser ((fmap (first g)) . f)
+  fmap g (Parser f)  = Parser $ fmap (first g) . f
+
+-- pure a represents the parser which consumes no input and successfully
+-- returns a result of a
+
+--p1 <*> p2 represents the parser which first runs p1 (which will
+--consume some input and produce a function), then passes the
+--remaining input to p2 (which consumes more input and produces
+--some value), then returns the result of applying the function to the
+--value
+
+instance Applicative (Parser) where
+  pure x                    = Parser $ \_ -> Just (x, [])
+  (Parser f) <*> (Parser g) = case runParser of 
+              None         -> None
+              Just (_, xs) -> 
