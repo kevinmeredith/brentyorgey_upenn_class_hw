@@ -75,7 +75,6 @@ instance Functor (Parser) where
 --value
 
 instance Applicative (Parser) where
-  pure x                    = Parser $ \_ -> Just (x, [])
-  (Parser f) <*> (Parser g) = case runParser of 
-              None         -> None
-              Just (_, xs) -> 
+  pure x            = Parser $ \xs -> Just (x, xs)
+  ff <*> (Parser g) = case (\ys -> fmap ) of Nothing      -> Parser $ \_ -> Nothing
+                                                 Just (_, xs) -> Parser $ \_ -> g xs
