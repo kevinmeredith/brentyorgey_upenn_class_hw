@@ -94,13 +94,8 @@ instance Applicative (Parser) where
 pair :: a -> a -> (a, a)
 pair x y = (x , y)
 
-aParser :: Parser (Char -> (Char, Char))
-aParser = Parser f
-  where
-    f []        = Nothing
-    f ('a', xs) = ()
-
+-- 'a' followed by 'b' parser
 abParser :: Parser (Char, Char)
-abParser = (satisfy )
+abParser = (fmap pair (satisfy (== 'a'))) <*> (satisfy (== 'b'))
 
 
