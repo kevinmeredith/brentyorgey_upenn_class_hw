@@ -89,5 +89,18 @@ instance Applicative (Parser) where
                                                              Just (fn, as)   -> case (g as) of Nothing      -> Nothing
                                                                                                Just (m, bs) -> Just (fn m, bs) 
 
--- fmap :: (a -> b) -> Parser a -> Parser b 
--- <*> :: Parser (a -> b) -> Parser a -> Parser b
+-- Exercise 3: Implement Parsers using `apply`
+
+pair :: a -> a -> (a, a)
+pair x y = (x , y)
+
+aParser :: Parser (Char -> (Char, Char))
+aParser = Parser f
+  where
+    f []        = Nothing
+    f ('a', xs) = ()
+
+abParser :: Parser (Char, Char)
+abParser = (satisfy )
+
+
