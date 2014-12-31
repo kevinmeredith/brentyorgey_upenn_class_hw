@@ -74,7 +74,20 @@ instance Functor (Parser) where
 --some value), then returns the result of applying the function to the
 --value
 
+-- credit to http://stackoverflow.com/questions/27698489/implement-applicative-parsers-apply-function/27698545#27698545
+-- for helping me out!
+
+foo :: Parser (Char -> Char)
+foo = Parser f
+  where 
+    f []     = Nothing
+    f (_:xs) = Just (const 'K', xs) 
+
 instance Applicative (Parser) where
-  pure x            = Parser $ \xs -> Just (x, xs)
-  ff <*> (Parser g) = case (\ys -> fmap ) of Nothing      -> Parser $ \_ -> Nothing
-                                                 Just (_, xs) -> Parser $ \_ -> g xs
+  pure x                    = Parser $ \xs -> Just (x, xs)
+  (Parser f) <*> (Parser g) = Parser $ \xs -> case (f xs) of Nothing         -> Nothing
+                                                             Just (fn, as)   -> case (g as) of Nothing      -> Nothing
+                                                                                               Just (m, bs) -> Just (fn m, bs) 
+
+-- fmap :: (a -> b) -> Parser a -> Parser b 
+-- <*> :: Parser (a -> b) -> Parser a -> Parser b
