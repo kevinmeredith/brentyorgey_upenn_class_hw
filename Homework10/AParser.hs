@@ -98,4 +98,17 @@ pair x y = (x , y)
 abParser :: Parser (Char, Char)
 abParser = (fmap pair (satisfy (== 'a'))) <*> (satisfy (== 'b'))
 
+abParser_ :: Parser (())
+abParser_ = (fmap (\_ _ -> ()) (satisfy (== 'a'))) <*> (satisfy (== 'b'))
 
+singleSpace :: Parser Char 
+singleSpace = Parser f
+  where
+    f []      = Nothing
+    f (x:xs) 
+     | isSpace x = Just (x, xs)
+     | otherwise = Nothing 
+
+-- runParser intPair "12 34" === Just([12, 34], [])
+intPair :: Parser [Integer]
+intPair = (fmap (\x _ y -> x : y : []) posInt) <*> singleSpace <*> posInt
