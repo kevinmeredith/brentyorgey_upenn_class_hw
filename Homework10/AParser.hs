@@ -98,6 +98,7 @@ pair x y = (x , y)
 abParser :: Parser (Char, Char)
 abParser = (fmap pair (satisfy (== 'a'))) <*> (satisfy (== 'b'))
 
+-- same as `abParser`, but different return type
 abParser_ :: Parser (())
 abParser_ = (fmap (\_ _ -> ()) (satisfy (== 'a'))) <*> (satisfy (== 'b'))
 
@@ -112,3 +113,17 @@ singleSpace = Parser f
 -- runParser intPair "12 34" === Just([12, 34], [])
 intPair :: Parser [Integer]
 intPair = (fmap (\x _ y -> x : y : []) posInt) <*> singleSpace <*> posInt
+
+-- Exercise 4.
+
+class Applicative f => MyAlternative f where
+  empty :: f a
+  alt   :: f a -> f a -> f a 
+
+instance MyAlternative Parser where
+  empty                      = Parser $ \_ -> Nothing
+  alt (Parser f)  (Parser g) = Parser $ \xs -> case (f xs) of Nothing      -> g xs
+                                                              Just (y, ys) -> Just (y, ys)
+
+intOrUppercase :: Parser ()
+intOrUppercase = alt (fmap (\_ -> ()) posInt) (fmap (\_ -> ()) (satisfy isUpper))                                                             
