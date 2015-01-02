@@ -10,10 +10,10 @@ import Control.Applicative
 ------------------------------------------------------------
 
 zeroOrMore :: Parser a -> Parser [a]
-zeroOrMore p = undefined
+zeroOrMore p = alt ( (:) <$> p <*> zeroOrMore p) (pure [])
 
 oneOrMore :: Parser a -> Parser [a]
-oneOrMore p = undefined
+oneOrMore p = (:) <$> p <*> (zeroOrMore p)
 
 ------------------------------------------------------------
 --  2. Utilities
