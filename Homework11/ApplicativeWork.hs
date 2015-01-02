@@ -14,3 +14,8 @@ mapA f (x:xs) = (:) <$> f x <*> mapA f xs
 sequenceA :: Applicative f => [f a] -> f [a]
 sequenceA []     = pure []
 sequenceA (x:xs) = (++) <$> (fmap (\y -> [y]) x) <*> sequenceA xs
+
+replicateA :: Applicative f => Int -> f a -> f [a]
+replicateA i x
+ | i <= 0    = pure []
+ | otherwise = (:) <$> id x <*> replicateA (i-1) x
