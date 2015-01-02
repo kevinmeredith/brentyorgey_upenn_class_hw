@@ -4,6 +4,7 @@ module SExpr where
 
 import AParser
 import Control.Applicative
+import Data.Char
 
 ------------------------------------------------------------
 --  1. Parsing repetitions
@@ -20,10 +21,10 @@ oneOrMore p = (:) <$> p <*> (zeroOrMore p)
 ------------------------------------------------------------
 
 spaces :: Parser String
-spaces = undefined
+spaces = zeroOrMore (satisfy isSpace)
 
 ident :: Parser String
-ident = undefined
+ident = (:) <$> (satisfy isAlpha) <*> (zeroOrMore (satisfy isAlphaNum))
 
 ------------------------------------------------------------
 --  3. Parsing S-expressions
