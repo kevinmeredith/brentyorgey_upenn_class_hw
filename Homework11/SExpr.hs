@@ -43,3 +43,8 @@ data Atom = N Integer | I Ident
 data SExpr = A Atom
            | Comb [SExpr]
   deriving Show
+
+parseAtom :: Parser Atom
+parseAtom = alt n i
+   where n = (\_ _ z -> N z) <$> (char 'N') <*> spaces <*> posInt
+         i = (\_ _ z -> I z) <$> (char 'I') <*> spaces <*> ident
