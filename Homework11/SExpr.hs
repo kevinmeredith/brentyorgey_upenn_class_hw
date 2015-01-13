@@ -55,4 +55,7 @@ parseAAtom = fmap (\x -> A x) parseAtom
 -- (bar (foo) 3 5 874)
 
 parseComb :: Parser SExpr
-parseComb = fmap (\x -> Comb (x [])) $ (\_ _ x _ _ _ -> (x :) ) <$> (zeroOrMore spaces) <*> (char '(') <*> (alt parseAAtom parseComb) <*> (zeroOrMore spaces) <*> (char ')') <*> (zeroOrMore spaces)
+parseComb = (\_ _ x _ _ _ -> x) <$> (zeroOrMore spaces) <*> (char '(') <*> (alt parseAAtom parseComb) <*> (zeroOrMore spaces) <*> (char ')') <*> (zeroOrMore spaces)
+
+parseCombElements :: Parser [SExpr]
+parseCombElements = oneOrMore parseComb
