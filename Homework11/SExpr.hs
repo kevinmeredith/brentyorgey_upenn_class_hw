@@ -1,3 +1,4 @@
+-- http://www.cis.upenn.edu/~cis194/spring13/hw/10-applicative.pdf
 {-# OPTIONS_GHC -Wall #-}
 
 module SExpr where
@@ -55,7 +56,10 @@ parseAAtom = fmap (\x -> A x) parseAtom
 -- (bar (foo) 3 5 874)
 
 parseComb :: Parser SExpr
-parseComb = (\_ _ x _ _ _ -> x) <$> (zeroOrMore spaces) <*> (char '(') <*> (alt parseAAtom parseComb) <*> (zeroOrMore spaces) <*> (char ')') <*> (zeroOrMore spaces)
+parseComb = (\_ _ _ x _ _ _ -> x) <$> spaces <*> (char '(') <*> spaces <*> (alt parseAAtom parseComb) <*> spaces <*> (char ')') <*> spaces
 
 parseCombElements :: Parser [SExpr]
 parseCombElements = oneOrMore parseComb
+
+parseSExpr :: Parser SExpr
+parseSExpr = alt parseAAtom (fmap (\x -> Comb x) parseCombElements)
