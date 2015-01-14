@@ -54,12 +54,11 @@ parseAAtom :: Parser SExpr
 parseAAtom = fmap (\x -> A x) parseAtom         
 
 -- (bar (foo) 3 5 874)
+-- see http://stackoverflow.com/questions/27894888/parsing-s-expression for its Haskell representation
 
-parseComb :: Parser SExpr
-parseComb = (\_ _ _ x _ _ _ -> x) <$> spaces <*> (char '(') <*> spaces <*> (alt parseAAtom parseComb) <*> spaces <*> (char ')') <*> spaces
-
-parseCombElements :: Parser [SExpr]
-parseCombElements = oneOrMore parseComb
-
-parseSExpr :: Parser SExpr
-parseSExpr = alt parseAAtom (fmap (\x -> Comb x) parseCombElements)
+parseInnerParens :: Parser SExpr
+parseInnerParens = ( spaces *> (char '(') *> spaces *> (alt one two) <* spaces <* (char ')') <* spaces )
+  where 
+  	one = f <$> (oneOrMore parseAAtom) <*> (zeroOrMore parseInnerParens) <*> (zeroOrMore parseAAtom)
+  	two = f <$> (zeroOrMore parseAAtom) <*> (zeroOrMore parseInnerParens) <*> (oneOrMore parseAAtom)
+  	f   = \a1 cs a2 -> Comb $ a1 ++ cs ++ a2
