@@ -47,8 +47,8 @@ data SExpr = A Atom
 
 parseAtom :: Parser Atom
 parseAtom = alt n i
-   where n = (\_ z -> N z) <$> spaces <*> posInt
-         i = (\ _ z -> I z) <$> spaces <*> ident
+   where n = (\z -> N z) <$> posInt
+         i = (\z -> I z) <$> ident
 
 parseAAtom :: Parser SExpr
 parseAAtom = fmap (\x -> A x) parseAtom         
@@ -56,15 +56,10 @@ parseAAtom = fmap (\x -> A x) parseAtom
 -- see http://stackoverflow.com/questions/27894888/parsing-s-expression for its Haskell representation
 
 parseComb :: Parser SExpr
-parseComb = ( spaces *> (char '(') *> spaces *> (alt one (alt two three))) <* spaces <* (char ')') <* spaces )
-  where 
-  	one   = f <$> (oneOrMore parseAAtom) <*> (zeroOrMore parseComb) <*> (zeroOrMore parseAAtom)
-  	two   = f <$> (zeroOrMore parseAAtom) <*> (zeroOrMore parseComb) <*> (oneOrMore parseAAtom)
-  	three = f <$> (zeroOrMore parseAAtom) <*> (oneOrMore parseComb) <*> (zeroOrMore parseAAtom)
-  	f     = \a1 cs a2 -> Comb $ a1 ++ cs ++ a2 
+parseComb = (\x -> Comb x) <$> ( spaces *> (char '(') *> (oneOrMore parseSExpr) <* (char ')') <* spaces )
 
 parseSExpr :: Parser SExpr
-parseSExpr = alt parseAAtom parseComb
+parseSExpr = alt (spaces *> parseAAtom <* spaces) parseComb
 
 -- testing per HW samples
 
