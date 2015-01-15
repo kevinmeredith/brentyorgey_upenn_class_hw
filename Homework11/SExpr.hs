@@ -38,12 +38,12 @@ type Ident = String
 
 -- An "atom" is either an integer value or an identifier.
 data Atom = N Integer | I Ident
-  deriving Show
+  deriving (Show, Eq)
 
 -- An S-expression is either an atom, or a list of S-expressions.
 data SExpr = A Atom
            | Comb [SExpr]
-  deriving Show
+  deriving (Show, Eq)
 
 parseAtom :: Parser Atom
 parseAtom = alt n i
@@ -53,12 +53,49 @@ parseAtom = alt n i
 parseAAtom :: Parser SExpr
 parseAAtom = fmap (\x -> A x) parseAtom         
 
--- (bar (foo) 3 5 874)
 -- see http://stackoverflow.com/questions/27894888/parsing-s-expression for its Haskell representation
 
-parseInnerParens :: Parser SExpr
-parseInnerParens = ( spaces *> (char '(') *> spaces *> (alt one two) <* spaces <* (char ')') <* spaces )
+parseComb :: Parser SExpr
+parseComb = ( spaces *> (char '(') *> spaces *> (alt one (alt two three))) <* spaces <* (char ')') <* spaces )
   where 
-  	one = f <$> (oneOrMore parseAAtom) <*> (zeroOrMore parseInnerParens) <*> (zeroOrMore parseAAtom)
-  	two = f <$> (zeroOrMore parseAAtom) <*> (zeroOrMore parseInnerParens) <*> (oneOrMore parseAAtom)
-  	f   = \a1 cs a2 -> Comb $ a1 ++ cs ++ a2
+  	one   = f <$> (oneOrMore parseAAtom) <*> (zeroOrMore parseComb) <*> (zeroOrMore parseAAtom)
+  	two   = f <$> (zeroOrMore parseAAtom) <*> (zeroOrMore parseComb) <*> (oneOrMore parseAAtom)
+  	three = f <$> (zeroOrMore parseAAtom) <*> (oneOrMore parseComb) <*> (zeroOrMore parseAAtom)
+  	f     = \a1 cs a2 -> Comb $ a1 ++ cs ++ a2 
+
+parseSExpr :: Parser SExpr
+parseSExpr = alt parseAAtom parseComb
+
+-- testing per HW samples
+
+test :: Bool
+test = all (== True) [testAtomN, testAtomI, testComb1, testComb2, testComb3]
+
+testAtomN :: Bool
+testAtomN = case (runParser parseSExpr "5") of Just (x, _) -> (x == A (N 5))
+                                               Nothing     -> False
+
+testAtomI :: Bool
+testAtomI = case (runParser parseSExpr "foo3") of Just (x, _) -> (x == A (I "foo3"))
+                                                  Nothing     -> False
+
+testComb1 :: Bool
+testComb1 = case (runParser parseSExpr "(bar (foo) 3 5 874)") of Just (x, _) -> (x == expectedComb1)
+                                                                 Nothing     -> False
+
+expectedComb1 :: SExpr
+expectedComb1 = Comb [A (I "bar"), Comb[A (I "foo")], A (N 3), A (N 5), A (N 874)]
+
+testComb2 :: Bool
+testComb2 = case (runParser parseSExpr "(((lambda x (lambda y (plus x y))) 3) 5)") of Just (x, _) -> (x == expectedComb2)
+                                                                                      Nothing     -> False
+
+expectedComb2 :: SExpr
+expectedComb2 = Comb [ Comb [ Comb [A (I "lambda"), A (I "x"), Comb [A (I "lambda"), A (I "y"), Comb [A (I "plus"), A (I "x"), A (I "y")]]], A (N 3)], A (N 5)]
+
+testComb3 :: Bool
+testComb3 = case (runParser parseSExpr "( lots of ( spaces in ) this ( one ) )") of Just (x, _) -> (x == expectedComb3)
+                                                                                    Nothing     -> False
+
+expectedComb3 :: SExpr
+expectedComb3 = Comb [ A (I "lots"), A (I "of"), Comb [A (I "spaces"), A (I "in")], A (I "this"), Comb [ A (I "one")]]
