@@ -28,10 +28,18 @@ type Army = Int
 
 data Battlefield = Battlefield { attackers :: Army, defenders :: Army }
 
---battle :: Battlefield -> Rand StdGen Battlefield
---battle b = 
+-- randomly create attackers and defenders, roll the die for maximum attackers & defenders
+---- return a new BattleField per the battle results
+instance Random Battlefield where
+	random = fightSingleRound die (Battlefield { attackers = rand1, defenders = rand2 })
+	   where (rand1, rand2) = twoInts 666
+	randomR = undefined
 
---rollDie :: Int -> [Int]
---rollDie n 
--- | n <= 0     = []
--- | otherwise  = result : rollDie (n-1)
+
+twoInts :: Int -> (Int, Int)
+twoInts x = let (one, gen) = random (mkStdGen x)
+                (two, _)   = random gen 
+            in (abs one, abs two)
+
+fightSingleRound :: (Rand StdGen DieValue) -> Battlefield -> Battlefield
+fightSingleRound = undefined
