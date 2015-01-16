@@ -30,11 +30,13 @@ data Battlefield = Battlefield { attackers :: Army, defenders :: Army }
 
 -- randomly create attackers and defenders, roll the die for maximum attackers & defenders
 ---- return a new BattleField per the battle results
-instance Random Battlefield where
-	random = fightSingleRound die (Battlefield { attackers = rand1, defenders = rand2 })
-	   where (rand1, rand2) = twoInts 666
-	randomR = undefined
+--instance Random Battlefield where
+--	random = first Battlefield . (Battlefield { attackers = rand1, defenders = rand2 })
+--	   where (rand1, rand2) = twoInts 666
+--	randomR = undefined
 
+mkBattleField :: (Army -> Battlefield) -> ((Army, Army), c) -> (Battlefield, c)
+mkBattleField f ((as, ds), c) = (Battlefield as ds, c)
 
 twoInts :: Int -> (Int, Int)
 twoInts x = let (one, gen) = random (mkStdGen x)
