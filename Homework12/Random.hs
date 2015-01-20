@@ -6,3 +6,6 @@ threeInts =
 	getRandom >>= \i2 ->
 	getRandom >>= \i3 ->
 	 return (i1,i2,i3)
+
+f :: ((Int, Int), String) -> String
+f ((x, y), z) = z

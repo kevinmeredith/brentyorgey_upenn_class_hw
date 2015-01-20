@@ -1,5 +1,6 @@
 -- http://www.cis.upenn.edu/~cis194/spring13
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# OPTIONS_GHC -Wall #-}
 
 module Risk where
 
@@ -26,22 +27,26 @@ die = getRandom
 
 type Army = Int
 
-data Battlefield = Battlefield { attackers :: Army, defenders :: Army }
+data Battlefield = Battlefield { attackers :: Army, defenders :: Army } deriving Show
 
 -- randomly create attackers and defenders, roll the die for maximum attackers & defenders
----- return a new BattleField per the battle results
---instance Random Battlefield where
---	random = first Battlefield . (Battlefield { attackers = rand1, defenders = rand2 })
---	   where (rand1, rand2) = twoInts 666
---	randomR = undefined
+-- return a new BattleField per the battle results
+instance Random Battlefield where
+	random = first (\(as, ds) -> Battlefield as ds) . twoInts
+	randomR = undefined
 
-mkBattleField :: (Army -> Battlefield) -> ((Army, Army), c) -> (Battlefield, c)
-mkBattleField f ((as, ds), c) = (Battlefield as ds, c)
+randomBF :: Rand StdGen Battlefield
+randomBF = getRandom
 
-twoInts :: Int -> (Int, Int)
-twoInts x = let (one, gen) = random (mkStdGen x)
-                (two, _)   = random gen 
-            in (abs one, abs two)
+twoInts :: RandomGen g => g -> ((Army, Army), g)
+twoInts gen = let (one, gen')  = random gen
+                  (two, gen'') = random gen'
+              in ((abs one, abs two), gen'')
 
-fightSingleRound :: (Rand StdGen DieValue) -> Battlefield -> Battlefield
-fightSingleRound = undefined
+--fightSingleRound :: (Rand StdGen Battlefield) -> Battlefield
+--fightSingleRound = 
+
+getDie :: Int -> [DieValue]
+getDie n 
+  | n < 0     = []
+  | otherwise = replicate n $ evalRand die (mkStdGen 55)
