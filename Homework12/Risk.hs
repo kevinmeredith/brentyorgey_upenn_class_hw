@@ -28,12 +28,14 @@ die = getRandom
 
 type Army = Int
 
-data Battlefield = Battlefield { attackers :: Army, defenders :: Army } deriving Show
+data Battlefield = Battlefield { attackers :: Army, defenders :: Army } deriving (Show, Eq)
 
+-- I'm not entirely sure if 
 instance Random Battlefield where
-	random            = first (\(as, ds) -> Battlefield as ds) . twoInts
-	randomR (bf1, bf2) = first (\(as, ds) -> Battlefield as ds) . genInt . randomR (max 1 (attackers bf1), max 20 (defenders bf2))
+	random             = first (\(as, ds) -> battleOneRound $ Battlefield as ds) . twoInts 
+	randomR (bf1, bf2) = first (\(as, ds) -> battleOneRound $ Battlefield as ds) . genInt . randomR (max 1 (attackers bf1), max 20 (defenders bf2))
 
+-- using `mod` 25 to make the numbers more manageable
 genInt :: RandomGen g => (Army, g) -> ((Army, Army), g)
 genInt (x, gen) = ( (x, i), gen)
   where
@@ -41,6 +43,12 @@ genInt (x, gen) = ( (x, i), gen)
 
 randomBF :: Rand StdGen Battlefield
 randomBF = getRandom
+
+battleOneRound :: Battlefield -> Battlefield
+battleOneRound bf = updatePerBattle bf (compete a_dice d_dice)
+  where
+    a_dice = rollDieN . getLegalAttackers $ (attackers bf)
+    d_dice = rollDieN . getLegalDefenders $ (defenders bf)
 
 twoInts :: RandomGen g => g -> ((Army, Army), g)
 twoInts gen = let (one, gen')  = random gen
@@ -53,6 +61,23 @@ fightSingleRound gen = updatePerBattle bf (compete a_dice d_dice)
     bf     = evalRand getRandom $ gen
     a_dice = rollDieN . getLegalAttackers $ (attackers bf)
     d_dice = rollDieN . getLegalDefenders $ (defenders bf)
+
+-- see http://stackoverflow.com/questions/28103118/building-a-rand-stdgen-int
+-- for my question on seeking help to understand `Rand StdGen Battlefield`
+battle :: Battlefield -> Rand StdGen Battlefield
+battle (Battlefield as ds) = getRandomR (bf1, bf2)
+  where
+    bf1   = Battlefield (fst rand1) (snd rand1)
+    rand1 = fst . twoInts $ (mkStdGen as)
+    bf2   = Battlefield (fst rand2) (snd rand2)
+    rand2 = fst . twoInts $ (mkStdGen ds)
+
+type AttackersDice = [DieValue]
+type DefendersDice = [DieValue]
+
+-- creates a tuple of "legal" dice. Note that the Attackers can attack with at most 3, and 2 for Defenders
+getDice :: Battlefield -> (AttackersDice, DefendersDice)
+getDice (Battlefield as ds) = ( rollDieN . getLegalAttackers $ as, rollDieN . getLegalDefenders $ ds) 
 
 -- defender must have at least 2 left at base
 -- TODO: make Maybe?
@@ -73,9 +98,6 @@ getLegalAttackers n
 updatePerBattle :: Battlefield -> Deaths -> Battlefield
 updatePerBattle (Battlefield as ds) (a_deaths, d_deaths) = Battlefield (as - a_deaths) (ds - d_deaths)
 
-type AttackersDice = [DieValue]
-type DefendersDice = [DieValue]
-
 type Deaths = (Army, Army)
 
 attacker_dies :: (Int, Int)
@@ -92,9 +114,9 @@ compete as_dice ds_dice = (attacker_deaths, defender_deaths)
           as               = reverse . sort . map (unDV) $ as_dice
           ds               = reverse . sort . map (unDV) $ ds_dice
 
-rollDieN :: Int -> [DieValue]
+rollDieN :: Army -> [DieValue]
 rollDieN n 
-  | n < 0     = []
+  | n <= 0     = []
   | otherwise = evalRand die (mkStdGen n) : rollDieN (n-1) 
 
 -- testing
@@ -163,3 +185,20 @@ getLegalDsTest6 = (getLegalDefenders 5) == 2
 
 getLegalDsTest7 :: Bool
 getLegalDsTest7 = (getLegalDefenders 765) == 2
+
+updatePerBattleTests :: Bool
+updatePerBattleTests = all (== True) [updatePerBattleTest1, updatePerBattleTest2]
+
+updatePerBattleTest1 :: Bool
+updatePerBattleTest1 = (updatePerBattle (Battlefield 10 20) (3, 3)) == (Battlefield 7 17)
+
+updatePerBattleTest2 :: Bool
+updatePerBattleTest2 = (updatePerBattle (Battlefield 30 10) (0, 3)) == (Battlefield 30 7)
+
+getDiceTests :: Bool
+getDiceTests = all (== True) [getDiceTest1]
+
+getDiceTest1 :: Bool
+getDiceTest1 = (length . fst $ dice) == 3 && (length . snd $ dice) == 2
+  where
+    dice = getDice (Battlefield 10 20)
