@@ -30,47 +30,17 @@ type Army = Int
 
 data Battlefield = Battlefield { attackers :: Army, defenders :: Army } deriving (Show, Eq)
 
--- I'm not entirely sure if 
-instance Random Battlefield where
-	random             = first (\(as, ds) -> battleOneRound $ Battlefield as ds) . twoInts 
-	randomR (bf1, bf2) = first (\(as, ds) -> battleOneRound $ Battlefield as ds) . genInt . randomR (max 1 (attackers bf1), max 20 (defenders bf2))
-
 -- using `mod` 25 to make the numbers more manageable
 genInt :: RandomGen g => (Army, g) -> ((Army, Army), g)
 genInt (x, gen) = ( (x, i), gen)
   where
    i = (`mod` 25) . fst $ random $ mkStdGen x 
 
-battleOneRound :: Battlefield -> Battlefield
-battleOneRound bf = updatePerBattle bf (compete a_dice d_dice)
-  where
-    a_dice = rollDieN . getLegalAttackers $ (attackers bf)
-    d_dice = rollDieN . getLegalDefenders $ (defenders bf)
-
-twoInts :: RandomGen g => g -> ((Army, Army), g)
-twoInts gen = let (one, gen')  = random gen
-                  (two, gen'') = random gen'
-              in (( (`mod` 100) . abs $ one, (`mod` 100) . abs $ two), gen'') -- using 10 to make the numbers smaller
-
--- random simulation of battle *without* input Battlefield
--- this function might not be useful
-fightSingleRound :: RandomGen g => g -> Battlefield
-fightSingleRound gen = updatePerBattle bf (compete a_dice d_dice)
-	where
-    bf     = evalRand getRandom $ gen
-    a_dice = rollDieN . getLegalAttackers $ (attackers bf)
-    d_dice = rollDieN . getLegalDefenders $ (defenders bf)
-
 -- see http://stackoverflow.com/questions/28103118/building-a-rand-stdgen-int
 -- for my question on seeking help to understand `Rand StdGen Battlefield`
 -- WRONG
 battle :: Battlefield -> Rand StdGen Battlefield
-battle (Battlefield as ds) = getRandomR (bf1, bf2)
-  where
-    bf1   = Battlefield (fst rand1) (snd rand1)
-    rand1 = fst . twoInts $ (mkStdGen as)
-    bf2   = Battlefield (fst rand2) (snd rand2)
-    rand2 = fst . twoInts $ (mkStdGen ds)
+battle bf = return $ battleOneRound bf
 
 -- fight until 0 defenders or 2 attackers
 invade :: Battlefield -> Rand StdGen Battlefield
@@ -78,15 +48,21 @@ invade bf @ (Battlefield as ds)
   | as < 2 || ds == 0 = return bf
   | otherwise         = battle bf >>= invade
 
+rollDieN :: Army -> [DieValue]
+rollDieN n 
+  | n <= 0     = []
+  | otherwise = evalRand die (mkStdGen (1000*n)) : rollDieN (n-1) 
+
+battleOneRound :: Battlefield -> Battlefield
+battleOneRound bf = updateArmy bf (compete a_dice d_dice)
+  where
+    a_dice = rollDieN . getLegalAttackers $ (attackers bf)
+    d_dice = rollDieN . getLegalDefenders $ (defenders bf)
+
 type AttackersDice = [DieValue]
 type DefendersDice = [DieValue]
 
--- creates a tuple of "legal" dice. Note that the Attackers can attack with at most 3, and 2 for Defenders
-getDice :: Battlefield -> (AttackersDice, DefendersDice)
-getDice (Battlefield as ds) = ( rollDieN . getLegalAttackers $ as, rollDieN . getLegalDefenders $ ds) 
-
 -- defender must have at least 2 left at base
--- TODO: make Maybe?
 getLegalDefenders :: Army -> Army
 getLegalDefenders n 
   | n >= 4    = 2
@@ -101,8 +77,8 @@ getLegalAttackers n
   | n == 2    = 1
   | otherwise = 0
 
-updatePerBattle :: Battlefield -> Deaths -> Battlefield
-updatePerBattle (Battlefield as ds) (a_deaths, d_deaths) = Battlefield (as - a_deaths) (ds - d_deaths)
+updateArmy :: Battlefield -> Deaths -> Battlefield
+updateArmy (Battlefield as ds) (a_deaths, d_deaths) = Battlefield (as - a_deaths) (ds - d_deaths)
 
 type Deaths = (Army, Army)
 
@@ -119,11 +95,6 @@ compete as_dice ds_dice = (attacker_deaths, defender_deaths)
           results          = map (\(x, y) -> if x > y then defender_dies else attacker_dies) $ zip as ds -- defender wins on EQ or GT
           as               = reverse . sort . map (unDV) $ as_dice
           ds               = reverse . sort . map (unDV) $ ds_dice
-
-rollDieN :: Army -> [DieValue]
-rollDieN n 
-  | n <= 0     = []
-  | otherwise = evalRand die (mkStdGen n) : rollDieN (n-1) 
 
 -- testing
 
@@ -192,19 +163,11 @@ getLegalDsTest6 = (getLegalDefenders 5) == 2
 getLegalDsTest7 :: Bool
 getLegalDsTest7 = (getLegalDefenders 765) == 2
 
-updatePerBattleTests :: Bool
-updatePerBattleTests = all (== True) [updatePerBattleTest1, updatePerBattleTest2]
+updateArmyTests :: Bool
+updateArmyTests = all (== True) [updateArmyTest1, updateArmyTest2]
 
-updatePerBattleTest1 :: Bool
-updatePerBattleTest1 = (updatePerBattle (Battlefield 10 20) (3, 3)) == (Battlefield 7 17)
+updateArmyTest1 :: Bool
+updateArmyTest1 = (updateArmy (Battlefield 10 20) (3, 3)) == (Battlefield 7 17)
 
-updatePerBattleTest2 :: Bool
-updatePerBattleTest2 = (updatePerBattle (Battlefield 30 10) (0, 3)) == (Battlefield 30 7)
-
-getDiceTests :: Bool
-getDiceTests = all (== True) [getDiceTest1]
-
-getDiceTest1 :: Bool
-getDiceTest1 = (length . fst $ dice) == 3 && (length . snd $ dice) == 2
-  where
-    dice = getDice (Battlefield 10 20)
+updateArmyTest2 :: Bool
+updateArmyTest2 = (updateArmy (Battlefield 30 10) (0, 3)) == (Battlefield 30 7)
