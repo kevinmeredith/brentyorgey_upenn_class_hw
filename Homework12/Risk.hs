@@ -41,9 +41,6 @@ genInt (x, gen) = ( (x, i), gen)
   where
    i = (`mod` 25) . fst $ random $ mkStdGen x 
 
-randomBF :: Rand StdGen Battlefield
-randomBF = getRandom
-
 battleOneRound :: Battlefield -> Battlefield
 battleOneRound bf = updatePerBattle bf (compete a_dice d_dice)
   where
@@ -55,6 +52,8 @@ twoInts gen = let (one, gen')  = random gen
                   (two, gen'') = random gen'
               in (( (`mod` 100) . abs $ one, (`mod` 100) . abs $ two), gen'') -- using 10 to make the numbers smaller
 
+-- random simulation of battle *without* input Battlefield
+-- this function might not be useful
 fightSingleRound :: RandomGen g => g -> Battlefield
 fightSingleRound gen = updatePerBattle bf (compete a_dice d_dice)
 	where
@@ -64,6 +63,7 @@ fightSingleRound gen = updatePerBattle bf (compete a_dice d_dice)
 
 -- see http://stackoverflow.com/questions/28103118/building-a-rand-stdgen-int
 -- for my question on seeking help to understand `Rand StdGen Battlefield`
+-- WRONG
 battle :: Battlefield -> Rand StdGen Battlefield
 battle (Battlefield as ds) = getRandomR (bf1, bf2)
   where
@@ -71,6 +71,12 @@ battle (Battlefield as ds) = getRandomR (bf1, bf2)
     rand1 = fst . twoInts $ (mkStdGen as)
     bf2   = Battlefield (fst rand2) (snd rand2)
     rand2 = fst . twoInts $ (mkStdGen ds)
+
+-- fight until 0 defenders or 2 attackers
+invade :: Battlefield -> Rand StdGen Battlefield
+invade bf @ (Battlefield as ds) 
+  | as < 2 || ds == 0 = return bf
+  | otherwise         = battle bf >>= invade
 
 type AttackersDice = [DieValue]
 type DefendersDice = [DieValue]
