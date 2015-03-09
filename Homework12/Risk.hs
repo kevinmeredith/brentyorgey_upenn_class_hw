@@ -38,7 +38,6 @@ genInt (x, gen) = ( (x, i), gen)
 
 -- see http://stackoverflow.com/questions/28103118/building-a-rand-stdgen-int
 -- for my question on seeking help to understand `Rand StdGen Battlefield`
--- WRONG
 battle :: Battlefield -> Rand StdGen Battlefield
 battle bf = return $ battleOneRound bf
 
