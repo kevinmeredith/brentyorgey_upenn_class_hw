@@ -3,6 +3,7 @@
 module MonadWork where
 
 import Control.Applicative
+import Control.Monad
 import Test.QuickCheck.Gen
 import Test.QuickCheck.Arbitrary
 
@@ -14,6 +15,9 @@ data Cons a = Cons a (Cons a)
 class (MyMonad m) where
 	ret     :: a         -> m a
 	flatMap :: m a -> (a -> m b) -> m b
+
+class (MyFunctor f) where
+    fumap :: (a -> b) -> f a -> f b	
 
 instance (MyMonad []) where
 	ret x       = [x]
@@ -80,9 +84,16 @@ test3 = Cons (Cons 5 (Cons 10 (Cons 20 Empty))) test2
 ---- Implement a Monad instance for ((->) e).
 -- helpful post - http://stackoverflow.com/a/27415709/409976
 -- waiting for help on whether to pass in a type after ->
---instance (MyMonad (-> e)) where
---	ret x       = \_ -> x
---	flatMap m f = undefined
+--type Arr a b = a -> 
+
+instance MyFunctor ((->) e) where
+	fumap = (.)
+
+instance (MyMonad ((->) e)) where
+	ret         = const
+	flatMap m f = \r -> f (m r) r
+
+-- 	flatMap :: m a -> (a -> m b) -> m b
 
 -- Exercise 3: Implement Functor and Monad instances for Free f.
 -- Assume that `f` has a Functor instance
@@ -93,17 +104,18 @@ instance Functor f => Functor (Free f) where
   fmap g (Var x)  = Var (g x)
   fmap g (Node x) = Node $ fmap (\y -> fmap g y) x
 
-instance Functor f => Applicative (Free f) where
-	pure x                = Var x
-	(Var f)  <*> (Var x)  = Var (f x)
-	(Var f)  <*> (Node x) = Node $ fmap (\y -> fmap f x) f
-	(Node f) <*> (Var y)  = Var $ fmap (\g -> fmap g y) f
-    
+-- TODO: finish `free monad` instances
+-- see http://stackoverflow.com/questions/27527703/implementing-applicative-free-f#comment43484816_27527703 for help
 
-instance Applicative f => Monad (Free f) where
-	return  x      = Var x
-	(Var x) >>= f  = f x
-	(Node x) >>= f = Node $ fmap (\y -> y >>= f) x
+instance Functor f => Applicative (Free f) where
+    pure                = Var
+    (Var f) <*> x       = fmap f x  -- from answer: pure f <*> x is fmap f x
+    u       <*> (Var y) = pure ($ y) <*> u -- interchange law: u <*> pure y = pure ($ y) <*> u
+
+--instance Applicative f => Monad (Free f) where
+--	return  x      = Var x
+--	(Var x) >>= f  = f x
+--	(Node x) >>= f = Node $ fmap (\y -> y >>= f) x
 
   -- a -> b 
   -- a -> Free f b
@@ -112,10 +124,18 @@ instance Applicative f => Monad (Free f) where
 -- of type m a, and a function k of type a -> m b               
 -- :t (>>=) :: m a -> (a -> m b) -> m b
 -- :t (<*>) :: f (a -> b) -> f a -> f b
-
 -- k >>= x = pure (x) <*> k 
 --         = m (a -> m b) <*> m a 
 
+-- Ex 1: Implement (>>=) in terms of fmap (or liftM) and join.
+bind :: (Functor m, Monad m) => m a -> (a -> m b) -> m b
+bind x f = join $ fmap f x
 
+-- Ex 2: Now implement join and fmap (liftM) in terms of (>>=) and return.
+join' :: Monad m => m (m a) -> m a
+join' x = x >>= id 
+
+fmap' :: (Functor f, Monad f) => (a -> b) -> f a -> f b
+fmap' f x = x >>= return . f
 
 -- Node (Just "foo") :: Node Maybe Int
