@@ -13,6 +13,7 @@
 --ghci> x `mod` 1000
 --333
 
+-- NOTE: wrong to assume that there will be 9 digits present
 
 import Data.Monoid
 import Data.List
@@ -44,10 +45,13 @@ hundreds x
  where result = hundredsToWord (x `mod` 1000)
 
 hundredsToWord :: Integer -> String
-hundredsToWord x 
- | x == 0    = mempty `mappend` rest
- | otherwise = onesToWord x `mappend` "hundred" `mappend` rest
- where rest = tensDigitToWord (x `mod` 100) (x `mod` 10)
+hundredsToWord x  
+ | x > 99    = onesToWord hundredsPlace `mappend` "hundred" `mappend` tensDigitToWord tensPlace onesPlace
+ | x > 9     = tensDigitToWord tensPlace onesPlace
+ | otherwise = onesToWord x
+     where hundredsPlace = x `div` 100
+     	   tensPlace     = x `mod` 100 `div` 10
+           onesPlace     = x `mod` 10
 
 tensDigitToWord :: Integer -> Integer -> String
 tensDigitToWord x y
