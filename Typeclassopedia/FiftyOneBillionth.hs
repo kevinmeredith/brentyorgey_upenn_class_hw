@@ -18,11 +18,23 @@
 import Data.Monoid
 import Data.List
 
+fiftyOneBillion :: Integer
+fiftyOneBillion = 51000000000
+
 findFiftyOneBillion :: Char
-findFiftyOneBillion = snd . head . dropWhile (\(i, _) -> i < 51000000) . zip [1..] . concat . sort . map integerToWord $ [1..999999999]
+findFiftyOneBillion = findCharAtIndex fiftyOneBillion
+
+-- FIXME: don't use head
+findCharAtIndex :: Integer -> Char
+findCharAtIndex idx = snd . head . dropWhile (\(i, _) -> i < idx) . zip [1..] . concat . sort . map integerToWord $ [1..999999999]
 
 integerToWord :: Integer -> String
-integerToWord x = (millions x) `mappend` (thousands x) `mappend` (hundreds x)
+integerToWord x = (millions x) `mappend` rest
+  where mills = millions x
+        thous = thousands x
+        hunds = hundreds x
+        rest = if ((not . null $ thous) && (not . null $ hunds)) then thous `mappend` "and" `mappend` hunds
+        	   else thous `mappend` hunds
 
 -- TODO: use bit shift instead?
 -- TODO: bad to use `div`? Did not figure out Fractional -> Integer
