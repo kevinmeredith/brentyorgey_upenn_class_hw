@@ -24,9 +24,15 @@ fiftyOneBillion = 51000000000
 findFiftyOneBillion :: Char
 findFiftyOneBillion = findCharAtIndex fiftyOneBillion
 
--- FIXME: don't use head
+-- FIXME : don't use head
 findCharAtIndex :: Integer -> Char
-findCharAtIndex idx = snd . head . dropWhile (\(i, _) -> i < idx) . zip [1..] . concat . sort . map integerToWord $ [1..999999999]
+findCharAtIndex idx = head . drop' (idx - 1) . concat . sort . map integerToWord $ [1..999999999]
+
+drop' :: Integer -> [a] -> [a]
+drop' n xxs@(_:xs) 
+ | n <= 0    = xxs
+ | null xs   = []
+ | otherwise = drop' (n-1) xs
 
 integerToWord :: Integer -> String
 integerToWord x = (millions x) `mappend` rest
