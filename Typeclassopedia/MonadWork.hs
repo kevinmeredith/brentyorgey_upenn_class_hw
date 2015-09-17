@@ -84,10 +84,14 @@ test3 = Cons (Cons 5 (Cons 10 (Cons 20 Empty))) test2
 ---- Implement a Monad instance for ((->) e).
 -- helpful post - http://stackoverflow.com/a/27415709/409976
 -- waiting for help on whether to pass in a type after ->
---type Arr a b = a -> 
+type Arr a b = a -> b
 
 instance MyFunctor ((->) e) where
 	fumap = (.)
+
+-- alternatively
+--instance MyFunctor ((->) e) where
+--  fumap f x = f . x
 
 instance (MyMonad ((->) e)) where
 	ret         = const
@@ -105,20 +109,20 @@ instance Functor f => Functor (Free f) where
   fmap g (Node x) = Node $ fmap (\y -> fmap g y) x
 
 -- TODO: finish `free monad` instances
--- see http://stackoverflow.com/questions/27527703/implementing-applicative-free-f#comment43484816_27527703 for help
+-- see http://stackoverflow.com/questions/27527703/implementing-applicative-free-f#comment43484816_27527703
+
+instance (Functor f, Show a) => Show (Free f a) where
+  show (Var x) = "Var " ++ (show x)
 
 instance Functor f => Applicative (Free f) where
     pure                = Var
-    (Var f) <*> x       = fmap f x  -- from answer: pure f <*> x is fmap f x
+    (Var f) <*> x       = fmap f x         -- from answer: pure f <*> x is fmap f x
     u       <*> (Var y) = pure ($ y) <*> u -- interchange law: u <*> pure y = pure ($ y) <*> u
 
---instance Applicative f => Monad (Free f) where
---	return  x      = Var x
---	(Var x) >>= f  = f x
---	(Node x) >>= f = Node $ fmap (\y -> y >>= f) x
-
-  -- a -> b 
-  -- a -> Free f b
+instance Functor f => MyMonad (Free f) where
+  ret                 = Var
+  flatMap (Var x)  f  = f x 
+  flatMap (Node xs) f = Node (fmap (\m -> flatMap m f) xs)
 
 -- (>>=) in terms of fmap, pure, and (<*>). We are given a value x 
 -- of type m a, and a function k of type a -> m b               
