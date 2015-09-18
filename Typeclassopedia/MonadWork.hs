@@ -99,15 +99,6 @@ instance (MyMonad ((->) e)) where
 
 -- 	flatMap :: m a -> (a -> m b) -> m b
 
--- Exercise 3: Implement Functor and Monad instances for Free f.
--- Assume that `f` has a Functor instance
-data Free f a = Var a
-               | Node (f (Free f a)) 
-
-instance Functor f => Functor (Free f) where
-  fmap g (Var x)  = Var (g x)
-  fmap g (Node x) = Node $ fmap (\y -> fmap g y) x
-
 -- TODO: finish `free monad` instances
 -- see http://stackoverflow.com/questions/27527703/implementing-applicative-free-f#comment43484816_27527703
 
@@ -122,7 +113,7 @@ instance Functor f => Applicative (Free f) where
 instance Functor f => MyMonad (Free f) where
   ret                 = Var
   flatMap (Var x)  f  = f x 
-  flatMap (Node xs) f = Node (fmap (\m -> flatMap m f) xs)
+  flatMap (Node xs) f = Node (fmap (\m -> flatMap m f) xs)  
 
 -- (>>=) in terms of fmap, pure, and (<*>). We are given a value x 
 -- of type m a, and a function k of type a -> m b               
