@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -XDataKinds -fno-warn-orphans #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 module MonadWork where
 
 import Test.QuickCheck.Gen
@@ -14,15 +15,14 @@ instance Functor f => Functor (Free f) where
   fmap g (Var x)  = Var (g x)
   fmap g (Node x) = Node $ fmap (\y -> fmap g y) x
 
-instance (Eq a) => Eq (Free Maybe a) where
+instance (Eq (f (Free f a)), Eq a) => Eq (Free f a) where
 	(==) (Var x) (Var y)       = x == y
 	(==) (Node fu1) (Node fu2) = fu1 == fu2
 	(==) _ _ 			       = False
 
-instance (Show a) => Show (Free Maybe a) where
-  show (Var x)          = "Var " ++ (show x)
-  show (Node (Just xs)) = "Node $ Just $ " ++ (show xs)
-  show (Node Nothing)   = "Node Nothing"
+instance (Show (f (Free f a)), Show a) => Show (Free f a) where
+  show (Var x)  = "Var " ++ (show x)
+  show (Node x) = "Node " ++ (show x)
 
 -- Functor Laws (from Typeclassopedia):
 instance Arbitrary (Free Maybe Int) where
