@@ -24,21 +24,24 @@ instance (Show (f (Free f a)), Show a) => Show (Free f a) where
   show (Var x)  = "Var " ++ (show x)
   show (Node x) = "Node " ++ (show x)
 
--- Functor Laws (from Typeclassopedia):
 instance Arbitrary (Free Maybe Int) where
 	arbitrary = do
 		x <- arbitrary :: Gen Int
 		y <- arbitrary :: Gen Int
 		elements [Var x, Var y, Node (Nothing), Node (Just (Var y))] 
 
+-- Functor Laws (from Typeclassopedia):
 --fmap id = id
 --fmap (g . h) = (fmap g) . (fmap h)
 
 functor_id_law ::  Free Maybe Int -> Bool
 functor_id_law x = (fmap id x) == (id x)
 
---functor_compose_law :: (Int -> Int) -> (Int -> Int) -> Cons Int -> Bool
---functor_compose_law f g x = left == right
---  where left = fmap (f . g) $ x
---        right = (fmap f) . (fmap g) $ x
+functor_compose_law :: (Int -> Int) -> (Int -> Int) -> Free Maybe Int -> Bool
+functor_compose_law f g x = left == right
+  where left = fmap (f . g) $ x
+        right = (fmap f) . (fmap g) $ x
+
+test :: (Int -> Int) -> Int -> Bool
+test _ _ = True
 
