@@ -5,6 +5,7 @@ module MonadWork where
 
 import Test.QuickCheck.Gen
 import Test.QuickCheck.Arbitrary
+import Text.Show.Functions
 
 -- Exercise 3: Implement Functor and Monad instances for Free f.
 -- Assume that `f` has a Functor instance
