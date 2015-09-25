@@ -20,7 +20,7 @@ instance Functor f => Functor (Free f) where
 instance Functor f => Applicative (Free f) where
 	pure           = Var
 	(Var f) <*> x  = fmap f x
-	(Node f) <*> x = undefined
+	(Node f) <*> x = Node $ fmap (\g -> g <*> x) f
 
 instance (Eq (f (Free f a)), Eq a) => Eq (Free f a) where
 	(==) (Var x) (Var y)       = x == y
