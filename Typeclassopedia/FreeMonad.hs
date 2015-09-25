@@ -52,3 +52,11 @@ functor_compose_law f g x = left == right
 -- Applicative Laws 
 -- (1) pure id <*> v = v
 -- (2) pure f <*> pure x = pure (f x)
+
+applicative_id_law :: Free Maybe Int -> Bool
+applicative_id_law x = (pure id <*> x) == x
+
+applicative_homomorphism_law :: (Int -> Int) -> Int -> Bool
+applicative_homomorphism_law f x = left == right where
+	left  = (pure f <*> pure x) :: Free Maybe Int
+	right = pure (f x)          :: Free Maybe Int
