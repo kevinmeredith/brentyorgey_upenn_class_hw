@@ -22,6 +22,11 @@ instance Functor f => Applicative (Free f) where
 	(Var f) <*> x  = fmap f x
 	(Node f) <*> x = Node $ fmap (\g -> g <*> x) f
 
+instance Functor f => Monad (Free f) where
+	return          = Var
+	(Var x)   >>= f = f x
+	(Node xs) >>= f = Node $ fmap (\x -> x >>= f) xs
+
 instance (Eq (f (Free f a)), Eq a) => Eq (Free f a) where
 	(==) (Var x) (Var y)       = x == y
 	(==) (Node fu1) (Node fu2) = fu1 == fu2
@@ -77,3 +82,21 @@ applicative_composition_law :: Free Maybe (Int -> Int) -> Free Maybe Int -> Bool
 applicative_composition_law f x = left == right where
 	left  = f <*> (f <*> x) 
 	right = pure (.) <*> f <*> f <*> x
+
+-- Monad Laws
+-- (1) return a >>= f  ≡ f a
+-- (2) m >>= return    ≡ m
+-- (3) (m >>= f) >>= g ≡ m >>= (\x -> f x >>= g)
+
+monad_left_id_law :: Int -> (Int -> Free Maybe Int) -> Bool
+monad_left_id_law x f = left == right where
+	left  = return x >>= f
+	right = f x
+
+monad_right_id_law :: Free Maybe Int -> Bool
+monad_right_id_law x = (x >>= return) == x
+
+monad_composition_law :: Free Maybe Int -> (Int -> Free Maybe Int) -> Bool
+monad_composition_law y f = left == right where
+	left  = (y >>= f) >>= f
+	right = y >>= (\x -> f x >>= f)
