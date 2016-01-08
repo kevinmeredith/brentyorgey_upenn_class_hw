@@ -19,7 +19,10 @@ instance (Foldable Tree) where
 
   -- (a -> b -> b) -> b -> t a -> b 
 
+--class (Functor t, Foldable t) => Traversable (t :: * -> *)
+--  traverse :: Applicative f => (a -> f b) -> t a -> f (t b)
+
 instance (Traversable Tree) where
 	traverse _ Empty        = pure Empty
-	traverse f (Leaf x)     = Leaf <$> f x
-	traverse f (Node l x r) = _
+	traverse f (Leaf x)     = fmap Leaf f x
+	traverse f (Node l x r) = fmap Node $ (traverse f l) <*> f x <*> traverse f r
