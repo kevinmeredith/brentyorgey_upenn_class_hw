@@ -24,5 +24,5 @@ instance (Foldable Tree) where
 
 instance (Traversable Tree) where
 	traverse _ Empty        = pure Empty
-	traverse f (Leaf x)     = fmap Leaf f x
-	traverse f (Node l x r) = fmap Node $ (traverse f l) <*> f x <*> traverse f r
+	traverse f (Leaf x)     = Leaf <$> (f x)
+	traverse f (Node l x r) = Node <$> (traverse f l) <*> f x <*> (traverse f r)
